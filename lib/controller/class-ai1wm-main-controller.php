@@ -455,9 +455,19 @@ class Ai1wm_Main_Controller {
 	 */
 	public function admin_menu() {
 		// Top-level WP Migration menu
+// 		add_menu_page(
+// 			'All-in-One WP Migration',
+// 			'All-in-One WP Migration',
+// 			'export',
+// 			'ai1wm_export',
+// 			'Ai1wm_Export_Controller::index',
+// 			'',
+// 			'76.295'
+// 		);
+		
 		add_menu_page(
-			'All-in-One WP Migration',
-			'All-in-One WP Migration',
+			'WP Migration',
+			'WP Migration',
 			'export',
 			'ai1wm_export',
 			'Ai1wm_Export_Controller::index',
@@ -473,6 +483,7 @@ class Ai1wm_Main_Controller {
 			'export',
 			'ai1wm_export',
 			'Ai1wm_Export_Controller::index'
+			
 		);
 
 		// Sub-level Import menu
