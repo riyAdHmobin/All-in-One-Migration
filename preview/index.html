@@ -1,0 +1,1794 @@
+<!DOCTYPE html>
+<!--
+  UI preview (static mockup) for SnapBak, by Riyadh Mobin.
+  Based on docs/04-UI-UX-Spec.md: the original's screens and states, with the
+  §12.4 UX requirements applied. Nothing here talks to a server; all jobs are
+  simulated in the browser. Site names, sizes and dates are sample data.
+-->
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Export site ‹ My Site — WordPress (UI preview)</title>
+<style>
+  :root {
+    --blue: #2271b1; --blue-dark: #135e96; --blue-tint: #f0f6fc;
+    --text: #1d2327; --muted: #50575e; --border: #c3c4c7; --border-light: #dcdcde;
+    --bg: #f0f0f1; --card: #fff; --menu: #1d2327; --menu-hover: #2c3338;
+    --red: #d63638; --red-dark: #b32d2e; --red-tint: #fcf0f1;
+    --green: #00a32a; --green-tint: #edfaef; --yellow: #dba617; --yellow-tint: #fcf9e8;
+    --radius: 4px;
+  }
+  * { box-sizing: border-box; }
+  html { font-size: 13px; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    line-height: 1.5;
+  }
+  body.modal-open { overflow: hidden; }
+  a { color: var(--blue); }
+  a:hover { color: var(--blue-dark); }
+  .screen-reader-text {
+    position: absolute !important; width: 1px; height: 1px; overflow: hidden;
+    clip: rect(1px, 1px, 1px, 1px); white-space: nowrap; margin: -1px; padding: 0; border: 0;
+  }
+  :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+  [hidden] { display: none !important; }
+  svg.icon { width: 18px; height: 18px; vertical-align: -4px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+  /* ---------- WP admin chrome ---------- */
+  #wpadminbar {
+    position: fixed; inset-block-start: 0; inset-inline: 0; height: 32px; z-index: 9990;
+    background: var(--menu); color: #f0f0f1; display: flex; align-items: center; gap: 16px; padding-inline: 10px;
+  }
+  #wpadminbar .wp-logo { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #a7aaad; display: grid; place-items: center; font: 700 11px/1 Georgia, serif; color: #a7aaad; }
+  #wpadminbar .howdy { margin-inline-start: auto; }
+  #adminmenuwrap { position: fixed; inset-block: 32px 0; inset-inline-start: 0; width: 160px; background: var(--menu); overflow-y: auto; z-index: 9980; }
+  #adminmenu { list-style: none; margin: 10px 0 0; padding: 0; }
+  #adminmenu > li > a { display: flex; gap: 8px; align-items: center; color: #f0f0f1; text-decoration: none; padding: 7px 10px; }
+  #adminmenu > li > a:hover { background: var(--menu-hover); color: #72aee6; }
+  #adminmenu .dot { width: 18px; height: 18px; border-radius: 3px; background: #50575e; flex: none; }
+  #adminmenu li.open > a { background: var(--blue); }
+  #adminmenu li.open > a .dot { background: #fff; opacity: .85; }
+  #wpcontent { margin-inline-start: 160px; padding: 52px 20px 120px; }
+
+  /* ---------- Page layout ---------- */
+  .wrap { max-width: 1180px; }
+  .wrap h1 { font-size: 23px; font-weight: 400; margin: 0 0 4px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .wrap h1:focus { outline: none; }
+  .page-intro { color: var(--muted); margin: 0 0 16px; font-size: 14px; }
+  .panel-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .panel-head .page-intro { margin: 0; }
+
+  /* ---------- Tabs (WordPress nav-tab look, ARIA tabs behaviour) ---------- */
+  .nav-tab-wrapper { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin: 14px 0 18px; overflow-x: auto; overflow-y: hidden; }
+  .nav-tab {
+    display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; margin-bottom: -1px;
+    font-size: 14px; font-weight: 600; line-height: 1.4; white-space: nowrap; text-decoration: none;
+    color: var(--muted); background: #dcdcde; border: 1px solid var(--border); border-bottom: 0;
+  }
+  .nav-tab:hover { background: #fff; color: var(--text); }
+  .nav-tab:focus-visible { outline-offset: -3px; }
+  .nav-tab[aria-selected="true"] { background: var(--bg); color: #000; border-bottom: 1px solid var(--bg); }
+  .nav-tab svg.icon { width: 16px; height: 16px; vertical-align: 0; }
+  .nav-tab .count { font-size: 11px; font-weight: 600; line-height: 18px; min-width: 18px; padding: 0 6px; border-radius: 9px; background: #646970; color: #fff; text-align: center; }
+  .nav-tab[aria-selected="true"] .count { background: var(--blue); }
+  [role="tabpanel"]:focus { outline: none; }
+  [role="tabpanel"]:focus-visible { outline: 2px solid var(--blue); outline-offset: 4px; }
+  .layout { display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: 20px; align-items: start; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; }
+  .card + .card { margin-top: 16px; }
+  .card h2 { font-size: 15px; margin: 0 0 4px; }
+  .card h3 { font-size: 13px; margin: 16px 0 6px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  .card .hint, .hint { color: var(--muted); margin: 0 0 12px; }
+  .aside .card h2 { font-size: 14px; }
+  .aside ul { margin: 6px 0 0; padding-inline-start: 18px; }
+  .aside li { margin-bottom: 4px; }
+
+  /* ---------- Buttons ---------- */
+  .button {
+    display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 12px;
+    font: inherit; font-size: 13px; line-height: 1; border-radius: 3px; cursor: pointer; text-decoration: none;
+    border: 1px solid var(--blue); background: #f6f7f7; color: var(--blue); white-space: nowrap;
+  }
+  .button:hover { background: var(--blue-tint); color: var(--blue-dark); border-color: var(--blue-dark); }
+  .button-primary { background: var(--blue); color: #fff; }
+  .button-primary:hover { background: var(--blue-dark); color: #fff; }
+  .button-danger { background: var(--red); border-color: var(--red); color: #fff; }
+  .button-danger:hover { background: var(--red-dark); border-color: var(--red-dark); color: #fff; }
+  .button-hero { min-height: 40px; padding: 0 18px; font-size: 14px; }
+  .button[disabled], .button[aria-disabled="true"] { opacity: .55; cursor: not-allowed; }
+  .button-link { background: none; border: 0; padding: 4px 2px; font: inherit; color: var(--blue); cursor: pointer; text-decoration: underline; }
+  .button-link.danger { color: var(--red-dark); }
+  .button-group { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+  /* ---------- Notices ---------- */
+  .notices:empty { display: none; }
+  .notices { margin-bottom: 14px; display: grid; gap: 8px; }
+  .notice { background: #fff; border: 1px solid var(--border-light); border-inline-start: 4px solid var(--blue); padding: 8px 12px; display: flex; align-items: flex-start; gap: 10px; }
+  .notice p { margin: 2px 0; flex: 1; }
+  .notice-success { border-inline-start-color: var(--green); }
+  .notice-error { border-inline-start-color: var(--red); }
+  .notice-warning { border-inline-start-color: var(--yellow); }
+  .notice .dismiss { background: none; border: 0; cursor: pointer; color: var(--muted); padding: 2px; }
+
+  /* ---------- Forms ---------- */
+  label { font-weight: 600; }
+  input[type="text"] { width: 100%; min-height: 32px; padding: 0 8px; border: 1px solid #8c8f94; border-radius: 4px; font: inherit; }
+  input[type="text"]:focus { border-color: var(--blue); box-shadow: 0 0 0 1px var(--blue); outline: none; }
+  .fr-list { list-style: none; margin: 0 0 10px; padding: 0; display: grid; gap: 10px; }
+  .fr-row { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto; gap: 10px; align-items: end; padding: 10px; background: #f6f7f7; border: 1px solid var(--border-light); border-radius: var(--radius); }
+  .fr-row .field { display: grid; gap: 4px; }
+  .fr-arrow { padding-bottom: 6px; color: var(--muted); }
+  [dir="rtl"] .fr-arrow { transform: scaleX(-1); }
+  .fr-remove { padding-bottom: 6px; }
+  .empty-line { color: var(--muted); margin: 0 0 10px; font-style: italic; }
+  .disclosure { display: flex; align-items: center; gap: 6px; background: none; border: 0; padding: 4px 0; font: inherit; font-weight: 600; color: var(--blue); cursor: pointer; }
+  .disclosure svg { transition: transform .15s; }
+  .disclosure[aria-expanded="true"] svg { transform: rotate(90deg); }
+  [dir="rtl"] .disclosure svg { transform: scaleX(-1); }
+  [dir="rtl"] .disclosure[aria-expanded="true"] svg { transform: rotate(90deg); }
+  .options-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 24px; margin-top: 6px; }
+  fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+  legend { font-weight: 600; padding: 0; margin: 10px 0 4px; }
+  .check { display: flex; gap: 8px; align-items: flex-start; font-weight: 400; padding: 3px 0; }
+  .check input { margin: 2px 0 0; }
+  .check small { display: block; color: var(--muted); }
+
+  /* ---------- Export actions & menu button ---------- */
+  .export-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 4px; }
+  .menu-wrap { position: relative; }
+  .menu {
+    position: absolute; inset-block-start: calc(100% + 4px); inset-inline-start: 0; z-index: 50; min-width: 270px;
+    list-style: none; margin: 0; padding: 4px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: 0 4px 16px rgba(0,0,0,.12);
+  }
+  .menu [role="menuitem"] {
+    display: flex; width: 100%; align-items: center; gap: 8px; padding: 7px 10px; background: none; border: 0;
+    font: inherit; color: var(--text); text-align: start; cursor: pointer; border-radius: 3px;
+  }
+  .menu [role="menuitem"]:hover, .menu [role="menuitem"]:focus { background: var(--blue-tint); outline: none; }
+  .menu .sep { height: 1px; background: var(--border-light); margin: 4px 0; }
+  .menu .group-label { padding: 6px 10px 2px; color: var(--muted); font-size: 12px; }
+  .badge { margin-inline-start: auto; font-size: 11px; padding: 1px 6px; border-radius: 10px; background: #f0f0f1; color: var(--muted); border: 1px solid var(--border-light); }
+
+  /* ---------- Import drop zone ---------- */
+  .dropzone {
+    border: 2px dashed #8c8f94; border-radius: 8px; padding: 36px 20px; text-align: center; background: #fbfbfc;
+    transition: background .15s, border-color .15s;
+  }
+  .dropzone.is-dragover { border-color: var(--blue); background: var(--blue-tint); }
+  .dropzone .big-icon { width: 44px; height: 44px; color: var(--blue); stroke-width: 1.5; }
+  .dropzone p { margin: 8px 0; font-size: 15px; }
+  .dropzone .or { color: var(--muted); font-size: 13px; }
+  .limits { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 12px; color: var(--muted); }
+  .warning-box { background: var(--yellow-tint); border: 1px solid #f0e2b8; border-radius: var(--radius); padding: 10px 12px; margin-bottom: 14px; display: flex; gap: 10px; }
+  .warning-box svg { color: #996800; }
+  .warning-box p { margin: 0; }
+  .error-box { background: var(--red-tint); border: 1px solid #f0c4c5; border-radius: var(--radius); padding: 14px 16px; }
+  .error-box h2 { color: var(--red-dark); }
+  .error-box code { background: rgba(0,0,0,.05); padding: 1px 4px; border-radius: 3px; word-break: break-all; }
+
+  /* ---------- Backups table ---------- */
+  table.backups { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--border); }
+  table.backups th, table.backups td { padding: 10px 12px; text-align: start; border-bottom: 1px solid var(--border-light); vertical-align: middle; }
+  table.backups thead th { font-weight: 600; background: #fff; }
+  table.backups tbody tr:hover { background: #f6f7f7; }
+  table.backups .name { display: flex; gap: 8px; align-items: flex-start; word-break: break-all; }
+  table.backups .name small { display: block; color: var(--muted); }
+  table.backups time small { display: block; color: var(--muted); }
+  table.backups td.num { white-space: nowrap; }
+  table.backups td.actions { white-space: nowrap; text-align: end; }
+  table.backups td.actions .button-group { justify-content: flex-end; }
+  .empty-state { text-align: center; padding: 40px 20px; }
+  .empty-state svg { width: 40px; height: 40px; color: var(--muted); stroke-width: 1.5; }
+  .empty-state p { font-size: 14px; }
+  .table-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+  .table-head p { margin: 0; color: var(--muted); }
+
+  /* ---------- Dialog ---------- */
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 100000; display: grid; place-items: center; padding: 16px; }
+  .dialog {
+    width: min(520px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow-y: auto;
+    background: #fff; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,.3); padding: 22px 24px 20px;
+  }
+  .dialog-head { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
+  .dialog-icon { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; flex: none; background: var(--blue-tint); color: var(--blue); }
+  .dialog[data-tone="success"] .dialog-icon { background: var(--green-tint); color: var(--green); }
+  .dialog[data-tone="error"] .dialog-icon { background: var(--red-tint); color: var(--red); }
+  .dialog[data-tone="warning"] .dialog-icon { background: var(--yellow-tint); color: #996800; }
+  .dialog-title { font-size: 18px; font-weight: 600; margin: 0; }
+  .dialog-title:focus { outline: none; }
+  .dialog-body p { margin: 0 0 10px; }
+  .dialog-body ul { margin: 0 0 10px; padding-inline-start: 20px; }
+  .kv { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 14px; margin: 0 0 12px; padding: 10px 12px; background: #f6f7f7; border-radius: var(--radius); }
+  .kv dt { color: var(--muted); }
+  .kv dd { margin: 0; word-break: break-all; }
+  .steps { list-style: none; margin: 4px 0 14px; padding: 0; display: grid; gap: 4px; }
+  .steps li { display: flex; gap: 8px; align-items: center; color: var(--muted); }
+  .steps li .mark { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--border); display: grid; place-items: center; flex: none; }
+  .steps li .mark svg { display: none; }
+  .steps li[data-state="done"] .mark svg { display: block; }
+  .steps li[data-state="done"] { color: var(--text); }
+  .steps li[data-state="done"] .mark { background: var(--green); border-color: var(--green); color: #fff; }
+  .steps li[data-state="done"] .mark svg { width: 12px; height: 12px; stroke-width: 3; }
+  .steps li[data-state="current"] { color: var(--text); font-weight: 600; }
+  .steps li[data-state="current"] .mark { border-color: var(--blue); border-top-color: transparent; animation: spin 1s linear infinite; }
+  .progress { height: 10px; background: #e0e0e0; border-radius: 5px; overflow: hidden; margin: 6px 0 6px; }
+  .progress-bar { height: 100%; width: 0; background: var(--blue); border-radius: 5px; transition: width .15s linear; }
+  .progress.is-indeterminate .progress-bar { width: 35%; animation: indeterminate 1.3s ease-in-out infinite; }
+  .progress-meta { display: flex; justify-content: space-between; gap: 10px; color: var(--muted); font-size: 12px; min-height: 18px; }
+  .progress-meta .retrying { color: #996800; font-weight: 600; }
+  .dialog-note { margin: 12px 0 0; padding-top: 10px; border-top: 1px solid var(--border-light); color: var(--muted); font-size: 12px; }
+  .dialog-actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; margin-top: 18px; }
+  .dialog-actions:empty { display: none; }
+  .error-detail { background: var(--red-tint); border-inline-start: 3px solid var(--red); padding: 8px 10px; }
+  details { margin: 8px 0; }
+  details summary { cursor: pointer; color: var(--blue); }
+  details pre { background: #1d2327; color: #f0f0f1; padding: 10px; border-radius: 4px; font-size: 11px; overflow-x: auto; white-space: pre-wrap; }
+  .checklist { list-style: none; padding: 0 !important; display: grid; gap: 6px; }
+  .checklist li { display: flex; gap: 8px; align-items: flex-start; }
+  .checklist .ok { color: var(--green); }
+  .checklist .warn { color: #996800; }
+  .spinner { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin .8s linear infinite; display: inline-block; vertical-align: -3px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes indeterminate { 0% { margin-inline-start: -35%; } 100% { margin-inline-start: 100%; } }
+
+  /* ---------- Settings ---------- */
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 14px 18px; margin: 14px 0; }
+  .field { display: grid; gap: 4px; align-content: start; }
+  .field .hint { margin: 0; font-size: 12px; }
+  .field select, .field input[type="number"], .field input[type="time"], .field input[type="password"], .field input[type="text"] {
+    width: 100%; min-height: 32px; padding: 0 8px; border: 1px solid #8c8f94; border-radius: 4px; font: inherit; background: #fff;
+  }
+  .field input:focus, .field select:focus { border-color: var(--blue); box-shadow: 0 0 0 1px var(--blue); outline: none; }
+  .field [aria-invalid="true"] { border-color: var(--red); box-shadow: 0 0 0 1px var(--red); }
+  .field-error { color: var(--red-dark); font-size: 12px; font-weight: 600; margin: 0; display: flex; gap: 4px; align-items: flex-start; }
+  .field-error svg { width: 14px; height: 14px; margin-top: 2px; }
+  .switch-row { display: flex; align-items: center; gap: 12px; margin-top: 6px; }
+  .switch { position: relative; display: inline-flex; align-items: center; gap: 10px; font-weight: 600; cursor: pointer; }
+  .switch input { position: absolute; opacity: 0; width: 36px; height: 20px; margin: 0; cursor: pointer; }
+  .switch .track { width: 36px; height: 20px; border-radius: 10px; background: #8c8f94; position: relative; transition: background .15s; flex: none; }
+  .switch .track::after { content: ""; position: absolute; top: 2px; inset-inline-start: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: inset-inline-start .15s; }
+  .switch input:checked + .track { background: var(--blue); }
+  .switch input:checked + .track::after { inset-inline-start: 18px; }
+  .switch input:focus-visible + .track { outline: 2px solid var(--blue); outline-offset: 2px; }
+  .status-box { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 14px; padding: 10px 12px; background: #f6f7f7; border-radius: var(--radius); margin: 14px 0 0; }
+  .status-box dt { color: var(--muted); }
+  .status-box dd { margin: 0; word-break: break-word; }
+  .status-ok { color: var(--green); font-weight: 600; }
+  .sub-options { margin: 4px 0 6px; padding-inline-start: 28px; }
+  .error-summary { background: #fff; border: 1px solid var(--red); border-inline-start-width: 4px; padding: 10px 14px; margin-bottom: 14px; }
+  .error-summary:focus { outline: 2px solid var(--red); outline-offset: 2px; }
+  .error-summary h2 { font-size: 14px; margin: 0 0 6px; color: var(--red-dark); }
+  .error-summary ul { margin: 0; padding-inline-start: 18px; }
+  .save-bar { position: sticky; bottom: 0; z-index: 5; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 14px 0; background: linear-gradient(rgba(240,240,241,0), var(--bg) 35%); margin-top: 4px; }
+  .save-bar .dirty { color: var(--muted); }
+  .type-badge { display: inline-block; font-size: 11px; line-height: 16px; padding: 0 6px; border-radius: 9px; margin-inline-start: 6px; border: 1px solid; white-space: nowrap; vertical-align: 1px; }
+  .type-manual { color: var(--muted); border-color: var(--border-light); background: #f6f7f7; }
+  .type-scheduled { color: var(--blue-dark); border-color: #b5d2ea; background: var(--blue-tint); }
+  .type-safety { color: #7a5600; border-color: #f0e2b8; background: var(--yellow-tint); }
+  .next-run { display: flex; gap: 6px; align-items: center; }
+
+  /* ---------- Preview controls (not part of the product UI) ---------- */
+  .preview-panel {
+    position: fixed; inset-block-end: 16px; inset-inline-end: 16px; z-index: 100010; /* above the dialog backdrop on purpose */ width: 300px;
+    background: #fff8e5; border: 2px dashed #c08a00; border-radius: 8px; box-shadow: 0 6px 24px rgba(0,0,0,.18); font-size: 12px;
+  }
+  .preview-panel > button { width: 100%; display: flex; align-items: center; justify-content: space-between; background: none; border: 0; padding: 10px 12px; font: inherit; font-weight: 700; cursor: pointer; color: #6b4e00; }
+  .preview-panel .inner { padding: 0 12px 12px; display: grid; gap: 8px; max-height: 60vh; overflow-y: auto; }
+  .preview-panel .tag { font-weight: 400; color: #6b4e00; }
+  .preview-panel select { width: 100%; min-height: 28px; font: inherit; }
+  .preview-panel label { font-weight: 400; display: flex; gap: 6px; align-items: center; }
+  .preview-panel .note { color: #6b4e00; margin: 0; }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 960px) { .layout { grid-template-columns: minmax(0, 1fr); } }
+  @media (max-width: 782px) {
+    #adminmenuwrap { display: none; }
+    #wpcontent { margin-inline-start: 0; padding: 48px 12px 140px; }
+    .nav-tab { padding: 8px 12px; }
+    .fr-row { grid-template-columns: minmax(0, 1fr); }
+    .fr-arrow { display: none; }
+    .options-grid { grid-template-columns: minmax(0, 1fr); }
+    table.backups thead { display: none; }
+    table.backups, table.backups tbody, table.backups tr, table.backups td { display: block; width: 100%; }
+    table.backups tr { border-bottom: 1px solid var(--border); padding: 6px 0; }
+    table.backups td { border: 0; padding: 4px 12px; }
+    table.backups td.actions { text-align: start; }
+    table.backups td.actions .button-group { justify-content: flex-start; }
+    .preview-panel { width: calc(100vw - 32px); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition: none !important; }
+    .progress.is-indeterminate .progress-bar { width: 100%; opacity: .45; margin: 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Inline icon sprite (preview's own simple line icons) -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="i-chevron" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3l10 18H2L12 3z"/><path d="M12 10v5M12 18v.5"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></symbol>
+  <symbol id="i-error" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M7 18a5 5 0 01-.6-9.96A6 6 0 0118 9a4.5 4.5 0 01-.5 9"/><path d="M12 12v8M9 15l3-3 3 3"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></symbol>
+  <symbol id="i-restore" viewBox="0 0 24 24"><path d="M4 12a8 8 0 108-8 8 8 0 00-6.3 3"/><path d="M4 4v4h4"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H6v18h12V7l-4-4z"/><path d="M14 3v4h4"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 6h7l2 2h9v11H3z"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7M12 11v10"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="1"/><path d="M8 11V7a4 4 0 018 0v4"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+</svg>
+
+<div id="wpadminbar">
+  <span class="wp-logo" aria-hidden="true">W</span>
+  <span>My Site</span>
+  <span class="howdy">Howdy, admin</span>
+</div>
+
+<div id="adminmenuwrap">
+  <nav aria-label="Main menu">
+    <ul id="adminmenu">
+      <li><a href="#export"><span class="dot"></span>Dashboard</a></li>
+      <li><a href="#export"><span class="dot"></span>Posts</a></li>
+      <li><a href="#export"><span class="dot"></span>Media</a></li>
+      <li><a href="#export"><span class="dot"></span>Pages</a></li>
+      <li><a href="#export"><span class="dot"></span>Appearance</a></li>
+      <li><a href="#export"><span class="dot"></span>Plugins</a></li>
+      <li><a href="#export"><span class="dot"></span>Users</a></li>
+      <li><a href="#export"><span class="dot"></span>Tools</a></li>
+      <li><a href="#export"><span class="dot"></span>Settings</a></li>
+      <li class="open">
+        <a href="#export" aria-current="page"><span class="dot"></span>SnapBak</a>
+      </li>
+    </ul>
+  </nav>
+</div>
+
+<div id="wpcontent">
+  <main class="wrap" id="main">
+    <h1 id="page-title">SnapBak</h1>
+    <div class="nav-tab-wrapper" role="tablist" aria-labelledby="page-title" id="tabs">
+      <a class="nav-tab" role="tab" id="tab-export" href="#export" aria-controls="page-export" aria-selected="true" tabindex="0"><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>Export</a>
+      <a class="nav-tab" role="tab" id="tab-import" href="#import" aria-controls="page-import" aria-selected="false" tabindex="-1"><svg class="icon" aria-hidden="true"><use href="#i-upload"/></svg>Import</a>
+      <a class="nav-tab" role="tab" id="tab-backups" href="#backups" aria-controls="page-backups" aria-selected="false" tabindex="-1"><svg class="icon" aria-hidden="true"><use href="#i-box"/></svg>Backups <span class="count" id="tab-backups-count" aria-hidden="true"></span><span class="screen-reader-text" id="tab-backups-count-sr"></span></a>
+      <a class="nav-tab" role="tab" id="tab-settings" href="#settings" aria-controls="page-settings" aria-selected="false" tabindex="-1"><svg class="icon" aria-hidden="true"><use href="#i-gear"/></svg>Settings</a>
+    </div>
+
+    <!-- ===================== EXPORT ===================== -->
+    <section id="page-export" role="tabpanel" aria-labelledby="tab-export" tabindex="0">
+      <p class="page-intro">Create a backup file of this site's database, media, plugins and themes.</p>
+      <div class="notices" id="notices-export" role="status"></div>
+
+      <div class="layout">
+        <form id="export-form" onsubmit="return false">
+          <div class="card">
+            <h2 id="fr-heading">Find and replace <span class="hint" style="font-weight:400">(optional)</span></h2>
+            <p class="hint" id="fr-desc">This site's address and file paths are updated automatically when the backup is imported. Add rows only for other text you want to change in the database.</p>
+            <p class="empty-line" id="fr-empty">No replacements added.</p>
+            <ul class="fr-list" id="fr-rows" aria-labelledby="fr-heading"></ul>
+            <div class="button-group">
+              <button type="button" class="button" id="fr-add"><svg class="icon"><use href="#i-plus"/></svg>Add replacement</button>
+              <span class="hint" id="fr-limit" hidden style="margin:0">You can add up to 10 replacements.</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <button type="button" class="disclosure" aria-expanded="false" aria-controls="adv-options" data-disclosure>
+              <svg class="icon"><use href="#i-chevron"/></svg>Advanced options
+            </button>
+            <div id="adv-options" hidden>
+              <p class="hint" style="margin-top:6px">Leave out parts of the site to make the backup smaller.</p>
+              <div class="options-grid">
+                <fieldset>
+                  <legend>Database</legend>
+                  <label class="check"><input type="checkbox" name="no_spam_comments"><span>Don't export spam comments</span></label>
+                  <label class="check"><input type="checkbox" name="no_post_revisions"><span>Don't export post revisions</span></label>
+                  <label class="check"><input type="checkbox" name="no_database"><span>Don't export the database<small>The backup will contain files only.</small></span></label>
+                  <label class="check"><input type="checkbox" name="no_email_replace"><span>Don't change email domains on import</span></label>
+                </fieldset>
+                <fieldset>
+                  <legend>Files</legend>
+                  <label class="check"><input type="checkbox" name="no_media"><span>Don't export the media library</span></label>
+                  <label class="check"><input type="checkbox" name="no_themes"><span>Don't export themes</span></label>
+                  <label class="check"><input type="checkbox" name="no_inactive_themes"><span>Don't export inactive themes</span></label>
+                  <label class="check"><input type="checkbox" name="no_plugins"><span>Don't export plugins</span></label>
+                  <label class="check"><input type="checkbox" name="no_inactive_plugins"><span>Don't export inactive plugins</span></label>
+                  <label class="check"><input type="checkbox" name="no_muplugins"><span>Don't export must-use plugins</span></label>
+                  <label class="check"><input type="checkbox" name="no_cache"><span>Don't export cache files</span></label>
+                </fieldset>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>Start export</h2>
+            <p class="hint">Keep this tab open while the export runs. You can stop it at any time.</p>
+            <div class="export-actions">
+              <button type="button" class="button button-primary button-hero" id="export-start"><svg class="icon"><use href="#i-download"/></svg>Export to file</button>
+              <div class="menu-wrap">
+                <button type="button" class="button button-hero" id="export-dest-btn" aria-haspopup="menu" aria-expanded="false" aria-controls="export-dest-menu">
+                  Other destinations<svg class="icon"><use href="#i-down"/></svg>
+                </button>
+                <ul class="menu" id="export-dest-menu" role="menu" aria-labelledby="export-dest-btn" hidden>
+                  <li role="none"><button role="menuitem" data-value="file"><svg class="icon"><use href="#i-file"/></svg>File on this computer</button></li>
+                  <li role="none" class="sep"></li>
+                  <li role="none" class="group-label">Needs an add-on</li>
+                  <li role="none"><button role="menuitem" data-value="addon:S3-compatible storage">S3-compatible storage<span class="badge">Add-on</span></button></li>
+                  <li role="none"><button role="menuitem" data-value="addon:FTP / SFTP">FTP / SFTP<span class="badge">Add-on</span></button></li>
+                  <li role="none"><button role="menuitem" data-value="addon:Google Drive">Google Drive<span class="badge">Add-on</span></button></li>
+                  <li role="none"><button role="menuitem" data-value="addon:Dropbox">Dropbox<span class="badge">Add-on</span></button></li>
+                  <li role="none"><button role="menuitem" data-value="addon:OneDrive">OneDrive<span class="badge">Add-on</span></button></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <aside class="aside" aria-label="About exports">
+          <div class="card">
+            <h2>What's in a backup</h2>
+            <ul>
+              <li>Database (posts, pages, users, settings)</li>
+              <li>Media library</li>
+              <li>Plugins, themes and must-use plugins</li>
+            </ul>
+            <p class="hint" style="margin:8px 0 0">Never included: SnapBak itself, existing backups and temporary files.</p>
+          </div>
+          <div class="card">
+            <h2><svg class="icon"><use href="#i-lock"/></svg> Private by default</h2>
+            <p class="hint" style="margin:0">Backups are kept in a protected folder. Only logged-in administrators can download them.</p>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ===================== IMPORT ===================== -->
+    <section id="page-import" role="tabpanel" aria-labelledby="tab-import" tabindex="0" hidden>
+      <p class="page-intro">Replace this site with the contents of a backup file.</p>
+      <div class="notices" id="notices-import" role="status"></div>
+
+      <div class="layout">
+        <div>
+          <div class="card" id="import-ready">
+            <div class="warning-box">
+              <svg class="icon"><use href="#i-alert"/></svg>
+              <p><strong>Importing replaces this site.</strong> The database, media, plugins and themes are overwritten. You'll be asked to confirm before anything changes.</p>
+            </div>
+
+            <div class="dropzone" id="dropzone">
+              <svg class="icon big-icon" aria-hidden="true"><use href="#i-upload"/></svg>
+              <p id="dz-text">Drag and drop a backup file here</p>
+              <p class="or">or</p>
+              <button type="button" class="button button-primary button-hero" id="choose-btn" aria-describedby="limits-text">
+                <svg class="icon"><use href="#i-file"/></svg>Choose file
+              </button>
+              <input type="file" id="import-file" accept=".snapbak" hidden>
+            </div>
+
+            <div class="limits">
+              <span id="limits-text">Maximum file size: <strong>No limit</strong>. Large files are uploaded in pieces and resume if the connection drops.</span>
+              <div class="menu-wrap">
+                <button type="button" class="button" id="import-src-btn" aria-haspopup="menu" aria-expanded="false" aria-controls="import-src-menu">
+                  Import from another source<svg class="icon"><use href="#i-down"/></svg>
+                </button>
+                <ul class="menu" id="import-src-menu" role="menu" aria-labelledby="import-src-btn" hidden style="inset-inline-start:auto;inset-inline-end:0">
+                  <li role="none"><button role="menuitem" data-value="file"><svg class="icon"><use href="#i-file"/></svg>File on this computer</button></li>
+                  <li role="none" class="sep"></li>
+                  <li role="none" class="group-label">Needs an add-on</li>
+                  <li role="none"><button role="menuitem" data-value="addon:URL">From a URL<span class="badge">Add-on</span></button></li>
+                  <li role="none"><button role="menuitem" data-value="addon:S3-compatible storage">S3-compatible storage<span class="badge">Add-on</span></button></li>
+                  <li role="none"><button role="menuitem" data-value="addon:FTP / SFTP">FTP / SFTP<span class="badge">Add-on</span></button></li>
+                  <li role="none"><button role="menuitem" data-value="addon:Google Drive">Google Drive<span class="badge">Add-on</span></button></li>
+                  <li role="none"><button role="menuitem" data-value="addon:Dropbox">Dropbox<span class="badge">Add-on</span></button></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="card error-box" id="import-blocked" hidden>
+            <h2>Backups can't be imported yet</h2>
+            <p>SnapBak can't write to its working folder:<br><code>/var/www/html/wp-content/snapbak-work</code></p>
+            <p>Make sure the web server can read and write this folder, then check again.</p>
+            <button type="button" class="button" data-recheck>Check again</button>
+          </div>
+        </div>
+
+        <aside class="aside" aria-label="Before you import">
+          <div class="card">
+            <h2>Before you import</h2>
+            <ul>
+              <li><a href="#export">Export this site first</a> so you can undo the import.</li>
+              <li>After the import, log in with a username and password from the <em>source</em> site.</li>
+              <li>Only import backups you created yourself. A backup contains code that will run on this site.</li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ===================== BACKUPS ===================== -->
+    <section id="page-backups" role="tabpanel" aria-labelledby="tab-backups" tabindex="0" hidden>
+      <div class="panel-head">
+        <p class="page-intro">Backups created on this site. Restore one to roll the site back.</p>
+        <a class="button" href="#export"><svg class="icon"><use href="#i-plus"/></svg>Create backup</a>
+      </div>
+      <div class="notices" id="notices-backups" role="status"></div>
+
+      <div id="backups-ready">
+        <div class="table-head">
+          <p id="backups-count"></p>
+          <p class="next-run" id="backups-next"></p>
+          <p><svg class="icon"><use href="#i-lock"/></svg> Stored in a protected folder. Downloads require you to be logged in.</p>
+        </div>
+        <table class="backups" id="backups-table">
+          <caption class="screen-reader-text">Backups on this site, newest first</caption>
+          <thead><tr><th scope="col">Name</th><th scope="col">Created</th><th scope="col">Size</th><th scope="col"><span class="screen-reader-text">Actions</span></th></tr></thead>
+          <tbody id="backups-body"></tbody>
+        </table>
+        <div class="card empty-state" id="backups-empty" hidden>
+          <svg class="icon" aria-hidden="true"><use href="#i-box"/></svg>
+          <p>There are no backups yet.</p>
+          <a class="button button-primary" href="#export">Create your first backup</a>
+        </div>
+      </div>
+
+      <div class="card error-box" id="backups-blocked" hidden>
+        <h2>Backups can't be listed</h2>
+        <p>SnapBak can't read or write its backups folder:<br><code>/var/www/html/wp-content/snapbak-backups</code></p>
+        <p>Make sure the web server can read and write this folder, then check again.</p>
+        <button type="button" class="button" data-recheck>Check again</button>
+      </div>
+    </section>
+
+    <!-- ===================== SETTINGS ===================== -->
+    <section id="page-settings" role="tabpanel" aria-labelledby="tab-settings" tabindex="0" hidden>
+      <p class="page-intro">Automatic backups, notifications and storage.</p>
+      <div class="notices" id="notices-settings" role="status"></div>
+      <div class="error-summary" id="settings-errors" tabindex="-1" role="group" aria-labelledby="settings-errors-title" hidden>
+        <h2 id="settings-errors-title"></h2>
+        <ul id="settings-errors-list"></ul>
+      </div>
+
+      <div class="layout">
+        <form id="settings-form" novalidate>
+          <!-- Scheduled backups -->
+          <div class="card">
+            <h2>Scheduled backups</h2>
+            <p class="hint">Back up this site on a regular schedule, without opening this page.</p>
+            <div class="switch-row">
+              <label class="switch"><input type="checkbox" role="switch" id="sch-enabled" aria-describedby="sch-state"><span class="track" aria-hidden="true"></span><span>Back up this site automatically</span></label>
+              <span class="hint" id="sch-state" style="margin:0">Off</span>
+            </div>
+            <div class="warning-box" id="runner-warning" hidden style="margin-top:12px">
+              <svg class="icon"><use href="#i-alert"/></svg>
+              <p><strong>Scheduled backups may start late.</strong> WP-Cron is turned off on this site (<code>DISABLE_WP_CRON</code>), so backups only start when your host runs <code>wp-cron.php</code>. Ask your host to run it every 5 minutes. Tools › Site Health shows whether it's working.</p>
+            </div>
+            <div id="sch-fields" hidden>
+              <div class="form-grid">
+                <div class="field">
+                  <label for="sch-frequency">How often</label>
+                  <select id="sch-frequency">
+                    <option value="twicedaily">Every 12 hours</option>
+                    <option value="daily" selected>Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                  </select>
+                </div>
+                <div class="field" id="f-weekday" hidden>
+                  <label for="sch-weekday">Day of the week</label>
+                  <select id="sch-weekday"></select>
+                </div>
+                <div class="field" id="f-monthday" hidden>
+                  <label for="sch-monthday">Day of the month</label>
+                  <input type="number" id="sch-monthday" min="1" max="28" value="1" inputmode="numeric" aria-describedby="sch-monthday-hint">
+                  <p class="hint" id="sch-monthday-hint">1 to 28, so it runs every month.</p>
+                </div>
+                <div class="field">
+                  <label for="sch-time">Time</label>
+                  <input type="time" id="sch-time" value="03:00" aria-describedby="sch-time-hint">
+                  <p class="hint" id="sch-time-hint">Site time (UTC+06:00, from Settings › General). Pick a quiet time.</p>
+                </div>
+              </div>
+
+              <fieldset>
+                <legend>What to back up</legend>
+                <label class="check"><input type="radio" name="sch-contents" value="full" checked><span>Whole site<small>Database, media, plugins and themes.</small></span></label>
+                <label class="check"><input type="radio" name="sch-contents" value="database"><span>Database only<small>Smaller and faster. Good for frequent schedules.</small></span></label>
+                <label class="check"><input type="radio" name="sch-contents" value="files"><span>Files only</span></label>
+              </fieldset>
+              <button type="button" class="disclosure" aria-expanded="false" aria-controls="sch-exclusions" data-disclosure style="margin-top:6px"><svg class="icon"><use href="#i-chevron"/></svg>Leave out</button>
+              <div id="sch-exclusions" class="sub-options" hidden>
+                <label class="check"><input type="checkbox" id="sch-x-spam" checked><span>Spam comments</span></label>
+                <label class="check"><input type="checkbox" id="sch-x-revisions"><span>Post revisions</span></label>
+                <label class="check"><input type="checkbox" id="sch-x-inactive-plugins"><span>Inactive plugins</span></label>
+                <label class="check"><input type="checkbox" id="sch-x-inactive-themes"><span>Inactive themes</span></label>
+                <label class="check"><input type="checkbox" id="sch-x-cache" checked><span>Cache files</span></label>
+              </div>
+
+              <div class="form-grid">
+                <div class="field">
+                  <label for="sch-destination">Save to</label>
+                  <select id="sch-destination">
+                    <option value="local" selected>This server (Backups tab)</option>
+                    <option disabled>S3-compatible storage (add-on)</option>
+                    <option disabled>FTP / SFTP (add-on)</option>
+                    <option disabled>Google Drive (add-on)</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="sch-keep">Scheduled backups to keep</label>
+                  <input type="number" id="sch-keep" min="1" max="100" value="7" inputmode="numeric" aria-describedby="sch-keep-hint">
+                  <p class="hint" id="sch-keep-hint">After a new one succeeds, older scheduled backups beyond this number are deleted. Manual and safety backups are never deleted automatically.</p>
+                </div>
+              </div>
+
+              <dl class="status-box" aria-label="Schedule status">
+                <dt>Next backup</dt><dd id="sch-next">—</dd>
+                <dt>Last backup</dt><dd id="sch-last"><span class="status-ok">Succeeded</span> · 7 days ago · 1.2 GB</dd>
+              </dl>
+              <div class="button-group" style="margin-top:12px">
+                <button type="button" class="button" id="sch-run-now"><svg class="icon"><use href="#i-clock"/></svg>Run scheduled backup now</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Safety backups -->
+          <div class="card">
+            <h2>Automatic safety backups</h2>
+            <p class="hint">Back up this site before changes that are hard to undo.</p>
+            <label class="check"><input type="checkbox" id="auto-import" checked><span>Before importing or restoring a backup<small>If the import goes wrong, restore the safety backup from the Backups tab. Needs free disk space about the size of this site.</small></span></label>
+            <label class="check"><input type="checkbox" id="auto-updates" aria-controls="auto-updates-scope"><span>Before automatic updates<small>Runs before WordPress installs automatic core, plugin or theme updates.</small></span></label>
+            <fieldset class="sub-options" id="auto-updates-scope" hidden>
+              <legend class="screen-reader-text">What to back up before updates</legend>
+              <label class="check"><input type="radio" name="auto-updates-contents" value="database" checked><span>Database only (fast)</span></label>
+              <label class="check"><input type="radio" name="auto-updates-contents" value="full"><span>Whole site</span></label>
+            </fieldset>
+            <div class="form-grid" style="max-width:440px">
+              <div class="field">
+                <label for="auto-keep">Safety backups to keep</label>
+                <input type="number" id="auto-keep" min="1" max="20" value="3" inputmode="numeric">
+              </div>
+            </div>
+          </div>
+
+          <!-- Notifications -->
+          <div class="card">
+            <h2>Email notifications</h2>
+            <p class="hint">For backups that run without this page open: scheduled, safety and command-line backups.</p>
+            <label class="check"><input type="checkbox" id="notify-failure" checked><span>Email me when a backup fails</span></label>
+            <label class="check"><input type="checkbox" id="notify-success"><span>Email me when a backup succeeds</span></label>
+            <div class="form-grid" style="grid-template-columns:minmax(0,1fr)">
+              <div class="field">
+                <label for="notify-email">Send to</label>
+                <input type="text" id="notify-email" inputmode="email" autocomplete="email" placeholder="admin@my-site.example" aria-describedby="notify-email-hint">
+                <p class="hint" id="notify-email-hint">Leave empty to use the site admin address (admin@my-site.example). Separate several addresses with commas.</p>
+              </div>
+            </div>
+            <button type="button" class="button" id="notify-test">Send a test email</button>
+          </div>
+
+          <!-- Storage -->
+          <div class="card">
+            <h2>Storage and logs</h2>
+            <dl class="status-box" style="margin-top:8px">
+              <dt>Backups folder</dt><dd><code>wp-content/snapbak-backups</code></dd>
+              <dt>Protection</dt><dd><span class="status-ok">Protected</span> · direct links are refused (checked 5 minutes ago)</dd>
+              <dt>Space used</dt><dd id="storage-used">—</dd>
+              <dt>Free disk space</dt><dd>38.2 GB</dd>
+            </dl>
+            <div class="form-grid">
+              <div class="field">
+                <label for="storage-warn">Warn when backups use more than (GB)</label>
+                <input type="number" id="storage-warn" min="0" step="1" value="0" inputmode="numeric" aria-describedby="storage-warn-hint">
+                <p class="hint" id="storage-warn-hint">0 turns the warning off.</p>
+              </div>
+              <div class="field">
+                <label for="log-days">Keep job logs for (days)</label>
+                <input type="number" id="log-days" min="1" max="365" value="30" inputmode="numeric" aria-describedby="log-days-hint">
+                <p class="hint" id="log-days-hint">1 to 365.</p>
+              </div>
+            </div>
+            <label class="check"><input type="checkbox" id="keep-on-uninstall" checked><span>Keep backups if SnapBak is deleted<small>Settings and logs are always removed.</small></span></label>
+          </div>
+
+          <!-- Advanced -->
+          <div class="card">
+            <button type="button" class="disclosure" aria-expanded="false" aria-controls="adv-settings" data-disclosure><svg class="icon"><use href="#i-chevron"/></svg>Advanced</button>
+            <div id="adv-settings" hidden>
+              <div class="form-grid">
+                <div class="field">
+                  <label for="runner">Run background jobs with</label>
+                  <select id="runner" aria-describedby="runner-hint">
+                    <option value="auto" selected>Automatic (recommended)</option>
+                    <option value="action_scheduler">Action Scheduler</option>
+                    <option value="wp_cron">WP-Cron</option>
+                    <option value="loopback">Loopback request</option>
+                    <option value="off">Browser only</option>
+                  </select>
+                  <p class="hint" id="runner-hint">“Browser only” turns off scheduled and safety backups before updates.</p>
+                </div>
+              </div>
+              <fieldset>
+                <legend>Password-protected site (HTTP Basic authentication)</legend>
+                <p class="hint">Only needed if the browser asks for a username and password before showing this site. The password is stored encrypted.</p>
+                <div class="form-grid">
+                  <div class="field"><label for="auth-user">Username</label><input type="text" id="auth-user" autocomplete="off"></div>
+                  <div class="field"><label for="auth-pass">Password</label><input type="password" id="auth-pass" autocomplete="new-password"></div>
+                </div>
+              </fieldset>
+            </div>
+          </div>
+
+          <div class="save-bar">
+            <button type="submit" class="button button-primary button-hero" id="settings-save">Save changes</button>
+            <span class="dirty" id="settings-dirty" role="status"></span>
+          </div>
+        </form>
+
+        <aside class="aside" aria-label="About automatic backups">
+          <div class="card">
+            <h2>How scheduled backups work</h2>
+            <ul>
+              <li>They run in the background, so this page doesn't need to be open.</li>
+              <li>Only one backup or import runs at a time. A scheduled backup waits if another job is running.</li>
+              <li>If the site was down at the scheduled time, the missed backup runs once when it's back, not several times.</li>
+              <li>Results appear on the Backups tab with a “Scheduled” label.</li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ===================== DIALOG ===================== -->
+<div class="overlay" id="dlg-overlay" hidden>
+  <div class="dialog" id="dlg" role="dialog" aria-modal="true" aria-labelledby="dlg-title" aria-describedby="dlg-body" data-tone="info">
+    <div class="dialog-head">
+      <span class="dialog-icon" id="dlg-icon" aria-hidden="true"></span>
+      <h2 class="dialog-title" id="dlg-title" tabindex="-1"></h2>
+    </div>
+    <div class="dialog-body" id="dlg-body"></div>
+    <div id="dlg-progress-wrap" hidden>
+      <div class="progress" id="dlg-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-labelledby="dlg-progress-label">
+        <div class="progress-bar" id="dlg-bar"></div>
+      </div>
+      <div class="progress-meta">
+        <span id="dlg-progress-label"></span>
+        <span id="dlg-detail"></span>
+      </div>
+    </div>
+    <p class="screen-reader-text" id="dlg-live" role="status" aria-live="polite"></p>
+    <p class="dialog-note" id="dlg-note" hidden></p>
+    <div class="dialog-actions" id="dlg-actions"></div>
+  </div>
+</div>
+
+<!-- ===================== PREVIEW CONTROLS ===================== -->
+<aside class="preview-panel" id="preview-panel" aria-label="Preview controls">
+  <button type="button" aria-expanded="true" aria-controls="preview-inner" id="preview-toggle">
+    <span>Preview controls <span class="tag">(not part of the UI)</span></span><svg class="icon"><use href="#i-down"/></svg>
+  </button>
+  <div class="inner" id="preview-inner">
+    <label for="pv-state" style="font-weight:600">Jump to a state</label>
+    <select id="pv-state">
+      <option value="">Choose a state…</option>
+      <optgroup label="Export">
+        <option value="export-running">Export running</option>
+        <option value="export-retry">Export retrying after a connection problem</option>
+        <option value="export-stopping">Stopping (cleanup)</option>
+        <option value="export-download">Export complete</option>
+        <option value="export-error">Export failed</option>
+      </optgroup>
+      <optgroup label="Import">
+        <option value="import-upload">Uploading</option>
+        <option value="import-confirm">Confirm overwrite</option>
+        <option value="import-running">Import running</option>
+        <option value="import-stop-confirm">Stop during import (second confirmation)</option>
+        <option value="import-done">Import complete</option>
+        <option value="import-error">Import failed</option>
+        <option value="import-badfile">Rejected file</option>
+      </optgroup>
+      <optgroup label="Backups">
+        <option value="restore-confirm">Restore confirmation</option>
+        <option value="delete-confirm">Delete confirmation</option>
+      </optgroup>
+      <optgroup label="Settings">
+        <option value="settings-on">Scheduled backups turned on</option>
+        <option value="settings-errors">Validation errors</option>
+        <option value="settings-run-now">Run scheduled backup now</option>
+      </optgroup>
+    </select>
+    <label><input type="checkbox" id="pv-fail"> Make the next job fail</label>
+    <label><input type="checkbox" id="pv-retry"> Add a connection retry to the next job</label>
+    <label><input type="checkbox" id="pv-empty"> Empty backups list</label>
+    <label><input type="checkbox" id="pv-blocked"> Storage folder not writable</label>
+    <label><input type="checkbox" id="pv-cron"> WP-Cron disabled on this site</label>
+    <label><input type="checkbox" id="pv-rtl"> Right-to-left layout <span class="tag">(English text, so punctuation shifts)</span></label>
+    <p class="note">Link to a state with <code>?state=…</code> (e.g. <code>?state=import-confirm</code>). Jobs are simulated; site names and sizes are sample data.</p>
+  </div>
+</aside>
+
+<script>
+(() => {
+  'use strict';
+
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const icon = (id) => `<svg class="icon" aria-hidden="true"><use href="#i-${id}"/></svg>`;
+  const pct = new Intl.NumberFormat(undefined, { style: 'percent', maximumFractionDigits: 0 });
+  const num = new Intl.NumberFormat();
+  const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' });
+  const dtf = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+
+  function fmtSize(bytes) {
+    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    let i = 0, v = bytes;
+    while (v >= 1024 && i < units.length - 1) { v /= 1024; i++; }
+    return new Intl.NumberFormat(undefined, { maximumFractionDigits: i ? 1 : 0 }).format(v) + ' ' + units[i];
+  }
+  function relTime(date) {
+    const diff = (date - Date.now()) / 1000;
+    const steps = [[60, 'second'], [60, 'minute'], [24, 'hour'], [30, 'day'], [12, 'month'], [Infinity, 'year']];
+    let v = diff;
+    for (const [n, unit] of steps) {
+      if (Math.abs(v) < n) return rtf.format(Math.round(v), unit);
+      v /= n;
+    }
+  }
+  function stamp(d) {
+    const p = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}`;
+  }
+
+  const opts = { failNext: false, retryNext: false, emptyBackups: false, storageBlocked: false };
+
+  /* ---------------- Routing ---------------- */
+  const PAGES = { export: 'Export', import: 'Import', backups: 'Backups', settings: 'Settings' };
+  const TAB_ORDER = Object.keys(PAGES);
+  let currentPage = null;
+  function route(focus) {
+    let p = location.hash.slice(1);
+    if (!PAGES[p]) p = 'export';
+    currentPage = p;
+    TAB_ORDER.forEach((id) => {
+      const on = id === p;
+      $('#page-' + id).hidden = !on;
+      const tab = $('#tab-' + id);
+      tab.setAttribute('aria-selected', String(on));
+      tab.tabIndex = on ? 0 : -1;
+    });
+    document.title = `${PAGES[p]} ‹ SnapBak ‹ My Site — WordPress (UI preview)`;
+    if (focus && !dlgOpen && !$('#tabs').contains(document.activeElement)) $('#tab-' + p).focus();
+  }
+  window.addEventListener('hashchange', () => route(true));
+
+  // Tabs: automatic activation; arrows follow reading direction; Home/End; Space activates.
+  $('#tabs').addEventListener('keydown', (e) => {
+    const i = TAB_ORDER.indexOf(currentPage);
+    const rtl = document.documentElement.dir === 'rtl';
+    let n = null;
+    if (e.key === 'ArrowRight') n = i + (rtl ? -1 : 1);
+    else if (e.key === 'ArrowLeft') n = i + (rtl ? 1 : -1);
+    else if (e.key === 'Home') n = 0;
+    else if (e.key === 'End') n = TAB_ORDER.length - 1;
+    else if (e.key === ' ') { e.preventDefault(); e.target.click(); return; }
+    if (n === null) return;
+    e.preventDefault();
+    const id = TAB_ORDER[(n + TAB_ORDER.length) % TAB_ORDER.length];
+    $('#tab-' + id).focus();
+    location.hash = id;
+  });
+
+  /* ---------------- Notices ---------------- */
+  function notice(page, type, html) {
+    const box = $('#notices-' + page);
+    const n = document.createElement('div');
+    n.className = 'notice notice-' + type;
+    n.innerHTML = `<p>${html}</p><button type="button" class="dismiss">${icon('x')}<span class="screen-reader-text">Dismiss this notice</span></button>`;
+    n.querySelector('.dismiss').addEventListener('click', () => n.remove());
+    box.prepend(n);
+  }
+
+  /* ---------------- Disclosures ---------------- */
+  $$('[data-disclosure]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!open));
+      $('#' + btn.getAttribute('aria-controls')).hidden = open;
+    });
+  });
+
+  /* ---------------- Find / replace rows ---------------- */
+  const MAX_ROWS = 10;
+  const rowsEl = $('#fr-rows');
+  let rowSeq = 0;
+  function syncRows() {
+    const rows = $$('.fr-row', rowsEl);
+    rows.forEach((li, i) => {
+      li.querySelector('.fr-remove').setAttribute('aria-label', `Remove replacement ${i + 1}`);
+      li.setAttribute('aria-label', `Replacement ${i + 1}`);
+    });
+    $('#fr-empty').hidden = rows.length > 0;
+    $('#fr-add').disabled = rows.length >= MAX_ROWS;
+    $('#fr-limit').hidden = rows.length < MAX_ROWS;
+  }
+  function addRow() {
+    if (rowsEl.children.length >= MAX_ROWS) return;
+    const id = 'fr' + (++rowSeq);
+    const li = document.createElement('li');
+    li.className = 'fr-row';
+    li.innerHTML = `
+      <div class="field"><label for="${id}-f">Find</label><input id="${id}-f" type="text" autocomplete="off" spellcheck="false"></div>
+      <span class="fr-arrow" aria-hidden="true">→</span>
+      <div class="field"><label for="${id}-r">Replace with</label><input id="${id}-r" type="text" autocomplete="off" spellcheck="false"></div>
+      <button type="button" class="button-link danger fr-remove">Remove</button>`;
+    rowsEl.append(li);
+    syncRows();
+    li.querySelector('input').focus();
+  }
+  $('#fr-add').addEventListener('click', addRow);
+  rowsEl.addEventListener('click', (e) => {
+    const btn = e.target.closest('.fr-remove');
+    if (!btn) return;
+    const li = btn.closest('.fr-row');
+    const next = li.nextElementSibling || li.previousElementSibling;
+    li.remove();
+    syncRows();
+    (next ? next.querySelector('input') : $('#fr-add')).focus();
+  });
+
+  /* ---------------- Menu buttons ---------------- */
+  function initMenu(btn, onSelect) {
+    const menu = $('#' + btn.getAttribute('aria-controls'));
+    const items = () => $$('[role="menuitem"]', menu);
+    const open = (idx) => {
+      menu.hidden = false;
+      btn.setAttribute('aria-expanded', 'true');
+      const list = items();
+      list[(idx + list.length) % list.length].focus();
+    };
+    const close = (returnFocus) => {
+      menu.hidden = true;
+      btn.setAttribute('aria-expanded', 'false');
+      if (returnFocus) btn.focus();
+    };
+    btn.addEventListener('click', () => (menu.hidden ? open(0) : close(true)));
+    btn.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown') { e.preventDefault(); open(0); }
+      if (e.key === 'ArrowUp') { e.preventDefault(); open(-1); }
+    });
+    menu.addEventListener('keydown', (e) => {
+      const list = items();
+      const i = list.indexOf(document.activeElement);
+      const go = (n) => { e.preventDefault(); list[(n + list.length) % list.length].focus(); };
+      if (e.key === 'ArrowDown') go(i + 1);
+      else if (e.key === 'ArrowUp') go(i - 1);
+      else if (e.key === 'Home') go(0);
+      else if (e.key === 'End') go(list.length - 1);
+      else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(true); }
+      else if (e.key === 'Tab') close(false);
+    });
+    menu.addEventListener('click', (e) => {
+      const it = e.target.closest('[role="menuitem"]');
+      if (!it) return;
+      close(true);
+      onSelect(it.dataset.value);
+    });
+    document.addEventListener('click', (e) => {
+      if (!menu.hidden && !menu.contains(e.target) && !btn.contains(e.target)) close(false);
+    });
+  }
+  function addonNotice(page, name) {
+    notice(page, 'info', `<strong>${esc(name)}</strong> needs an add-on that isn't installed. Use “File on this computer” instead, or install the add-on from the Plugins screen.`);
+  }
+  initMenu($('#export-dest-btn'), (v) => (v === 'file' ? startExport() : addonNotice('export', v.slice(6))));
+  initMenu($('#import-src-btn'), (v) => (v === 'file' ? $('#import-file').click() : addonNotice('import', v.slice(6))));
+
+  /* ---------------- Dialog ---------------- */
+  const overlay = $('#dlg-overlay');
+  const dlg = $('#dlg');
+  const TONE_ICON = { info: 'info', success: 'check', error: 'error', warning: 'alert' };
+  let dlgOpen = false, lastFocus = null, escAction = null, escMessage = '';
+
+  function showDialog(cfg) {
+    if (!dlgOpen) {
+      lastFocus = document.activeElement;
+      overlay.hidden = false;
+      dlgOpen = true;
+      document.body.classList.add('modal-open');
+    }
+    dlg.setAttribute('role', cfg.role || 'dialog');
+    dlg.dataset.tone = cfg.tone || 'info';
+    dlg.setAttribute('aria-busy', cfg.busy ? 'true' : 'false');
+    $('#dlg-icon').innerHTML = cfg.spinner ? '<span class="spinner"></span>' : icon(TONE_ICON[cfg.tone || 'info']);
+    $('#dlg-title').textContent = cfg.title;
+    $('#dlg-body').innerHTML = cfg.body || '';
+    $('#dlg-progress-wrap').hidden = !cfg.progress;
+    if (cfg.progress) setProgress(cfg.progress.value, cfg.progress.label, cfg.progress.detail || '');
+    const note = $('#dlg-note');
+    note.hidden = !cfg.note;
+    note.textContent = cfg.note || '';
+    const actions = $('#dlg-actions');
+    actions.innerHTML = '';
+    (cfg.actions || []).forEach((a) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'button' + (a.variant ? ' button-' + a.variant : '');
+      b.textContent = a.label;
+      if (a.autofocus) b.dataset.autofocus = '';
+      b.addEventListener('click', a.action);
+      actions.append(b);
+    });
+    escAction = cfg.esc || null;
+    escMessage = cfg.escMessage || '';
+    ($('[data-autofocus]', dlg) || $('#dlg-title')).focus();
+  }
+  function closeDialog(returnFocus = true) {
+    overlay.hidden = true;
+    dlgOpen = false;
+    escAction = null;
+    document.body.classList.remove('modal-open');
+    if (returnFocus && lastFocus && document.contains(lastFocus)) lastFocus.focus();
+  }
+  function setProgress(value, label, detail) {
+    const pb = $('#dlg-progress');
+    if (value == null) {
+      pb.classList.add('is-indeterminate');
+      pb.removeAttribute('aria-valuenow');
+      $('#dlg-bar').style.width = '';
+      pb.setAttribute('aria-valuetext', label);
+    } else {
+      pb.classList.remove('is-indeterminate');
+      const v = Math.max(0, Math.min(100, value));
+      pb.setAttribute('aria-valuenow', String(Math.round(v)));
+      pb.setAttribute('aria-valuetext', `${label}, ${pct.format(v / 100)}`);
+      $('#dlg-bar').style.width = v + '%';
+    }
+    $('#dlg-progress-label').textContent = value == null ? label : `${label} · ${pct.format(value / 100)}`;
+    $('#dlg-detail').innerHTML = detail;
+  }
+  let lastAnnounce = 0;
+  function announce(msg, force) {
+    const now = Date.now();
+    if (!force && now - lastAnnounce < 10000) return;
+    lastAnnounce = now;
+    const live = $('#dlg-live');
+    live.textContent = '';
+    setTimeout(() => { live.textContent = msg; }, 50);
+  }
+  document.addEventListener('keydown', (e) => {
+    if (!dlgOpen) return;
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      if (escAction) escAction();
+      else if (escMessage) announce(escMessage, true);
+    } else if (e.key === 'Tab') {
+      const f = $$('button:not([disabled]), [href], input, select, summary, [tabindex]:not([tabindex="-1"])', dlg)
+        .filter((el) => el.offsetParent !== null);
+      if (!f.length) { e.preventDefault(); $('#dlg-title').focus(); return; }
+      const first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && (document.activeElement === first || document.activeElement === $('#dlg-title'))) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  });
+
+  /* ---------------- Jobs (simulated) ---------------- */
+  const PHASES = {
+    export: [
+      { id: 'prepare', label: 'Preparing export', ms: 700, indet: true },
+      { id: 'scan', label: 'Scanning files', ms: 1200, indet: true },
+      { id: 'files', label: 'Archiving files', ms: 3200 },
+      { id: 'db', label: 'Exporting database', ms: 2200 },
+      { id: 'finalize', label: 'Finishing the backup file', ms: 800, indet: true },
+    ],
+    import: [
+      { id: 'upload', label: 'Uploading backup file', ms: 3000 },
+      { id: 'validate', label: 'Checking backup file', ms: 900, indet: true },
+      { id: 'confirm', gate: true },
+      { id: 'safety', label: 'Backing up this site first', ms: 1800 },
+      { id: 'files', label: 'Restoring files', ms: 2600, destructive: true },
+      { id: 'db', label: 'Importing database', ms: 2200, destructive: true },
+      { id: 'urls', label: 'Updating URLs and paths', ms: 1300, destructive: true },
+      { id: 'finalize', label: 'Finishing up', ms: 700, indet: true, destructive: true },
+    ],
+    restore: [
+      { id: 'confirm', gate: true },
+      { id: 'validate', label: 'Checking backup file', ms: 900, indet: true },
+      { id: 'safety', label: 'Backing up this site first', ms: 1800 },
+      { id: 'files', label: 'Restoring files', ms: 2600, destructive: true },
+      { id: 'db', label: 'Importing database', ms: 2200, destructive: true },
+      { id: 'urls', label: 'Updating URLs and paths', ms: 1300, destructive: true },
+      { id: 'finalize', label: 'Finishing up', ms: 700, indet: true, destructive: true },
+    ],
+  };
+  const TOTALS = { files: 18432, tables: 24 };
+  const TICK = 100;
+  let job = null;
+
+  function makeJob(kind, meta) {
+    const phases = PHASES[kind].filter((p) => p.id !== 'safety' || settings.beforeImport);
+    const j = { kind, meta, phases, i: 0, pct: 0, paused: false, stopped: false, timer: null, failAt: -1, retryAt: -1, retried: false };
+    if (opts.failNext) { j.failAt = phases.findIndex((p) => p.id === 'db'); opts.failNext = false; $('#pv-fail').checked = false; }
+    if (opts.retryNext) { j.retryAt = phases.findIndex((p) => p.id === 'files'); opts.retryNext = false; $('#pv-retry').checked = false; }
+    return j;
+  }
+  function killJob() {
+    if (job) { clearTimeout(job.timer); job.stopped = true; }
+    job = null;
+  }
+  const VERB = { export: 'export', import: 'import', restore: 'restore' };
+  const pageFor = (kind) => (kind === 'export' ? 'export' : kind === 'import' ? 'import' : 'backups');
+
+  function overall() {
+    const work = job.phases.filter((p) => !p.gate);
+    const total = work.reduce((s, p) => s + p.ms, 0);
+    let done = 0;
+    job.phases.forEach((p, k) => {
+      if (p.gate) return;
+      if (k < job.i) done += p.ms;
+      else if (k === job.i) done += p.ms * job.pct;
+    });
+    return (done / total) * 100;
+  }
+  function stepsHtml() {
+    return '<ol class="steps" id="dlg-steps">' + job.phases.filter((p) => !p.gate)
+      .map((p) => `<li data-id="${p.id}" data-state="pending"><span class="mark">${icon('check')}</span><span>${esc(p.label)}</span><span class="screen-reader-text state-text"></span></li>`)
+      .join('') + '</ol>';
+  }
+  function markSteps() {
+    job.phases.forEach((p, k) => {
+      if (p.gate) return;
+      const li = $(`#dlg-steps li[data-id="${p.id}"]`);
+      if (!li) return;
+      const state = k < job.i ? 'done' : k === job.i ? 'current' : 'pending';
+      li.dataset.state = state;
+      li.querySelector('.state-text').textContent = state === 'done' ? ' (done)' : state === 'current' ? ' (in progress)' : '';
+    });
+  }
+  function detailFor(ph) {
+    if (!ph) return '';
+    if (ph.id === 'upload') return `${fmtSize(job.meta.size * job.pct)} of ${fmtSize(job.meta.size)}`;
+    if (ph.id === 'scan') return `Found ${num.format(Math.round(TOTALS.files * job.pct))} files`;
+    if (ph.id === 'files') return `${num.format(Math.round(TOTALS.files * job.pct))} of ${num.format(TOTALS.files)} files`;
+    if (ph.id === 'db') return `${Math.min(TOTALS.tables, Math.floor(TOTALS.tables * job.pct) + 1)} of ${TOTALS.tables} tables`;
+    return '';
+  }
+  function showRunning() {
+    const titles = { export: 'Exporting site', import: 'Importing site', restore: 'Restoring backup' };
+    const ph = job.phases[job.i];
+    showDialog({
+      title: job.meta.type === 'scheduled' ? 'Running scheduled backup' : titles[job.kind],
+      body: stepsHtml(),
+      progress: { value: overall(), label: ph ? ph.label : '', detail: esc(detailFor(ph)) },
+      note: job.kind === 'export'
+        ? 'Keep this tab open until the export finishes. You can keep working in another tab.'
+        : 'Keep this tab open until the import finishes.',
+      actions: [{ label: `Stop ${VERB[job.kind]}`, action: requestStop }],
+      esc: requestStop,
+    });
+    markSteps();
+    if (ph) announce(ph.label, true);
+  }
+  function updateRunning() {
+    const ph = job.phases[job.i];
+    if (!ph || ph.gate) return;
+    setProgress(ph.indet ? null : overall(), ph.label, esc(detailFor(ph)));
+    if (ph.indet) $('#dlg-progress-label').textContent = ph.label;
+  }
+  function loop() {
+    if (!job || job.stopped || job.paused) return;
+    const ph = job.phases[job.i];
+    if (!ph) return finish();
+    if (ph.gate) { job.paused = true; return showConfirm(); }
+    if (job.retryAt === job.i && !job.retried && job.pct > 0.4) {
+      job.retried = true;
+      $('#dlg-detail').innerHTML = '<span class="retrying">Connection problem, retrying (attempt 2 of 5)…</span>';
+      announce('Connection problem. Retrying, attempt 2 of 5.', true);
+      job.timer = setTimeout(loop, 2600);
+      return;
+    }
+    if (job.failAt === job.i && job.pct > 0.55) return fail();
+    job.pct += TICK / ph.ms;
+    if (job.pct >= 1) {
+      job.pct = 0;
+      job.i++;
+      markSteps();
+      const next = job.phases[job.i];
+      if (next && !next.gate) announce(next.label, true);
+    } else {
+      announce(`${ph.label}, ${pct.format(overall() / 100)}`);
+    }
+    updateRunning();
+    job.timer = setTimeout(loop, TICK);
+  }
+
+  function requestStop() {
+    if (!job) return;
+    const ph = job.phases[job.i];
+    if (ph && ph.destructive) {
+      clearTimeout(job.timer);
+      job.paused = true;
+      showDialog({
+        role: 'alertdialog', tone: 'warning',
+        title: `Stop the ${VERB[job.kind]}?`,
+        body: `<p>Files and database tables are already being replaced. If you stop now, the site may be left <strong>partially restored</strong> until you run the ${VERB[job.kind]} again or restore another backup.</p>`,
+        actions: [
+          { label: 'Stop anyway', variant: 'danger', action: () => doStop() },
+          { label: `Keep ${job.kind === 'export' ? 'exporting' : 'importing'}`, variant: 'primary', autofocus: true, action: resume },
+        ],
+        esc: resume,
+      });
+    } else {
+      doStop();
+    }
+  }
+  function resume() {
+    if (!job) return;
+    job.paused = false;
+    showRunning();
+    loop();
+  }
+  function doStop(message) {
+    if (!job) return;
+    const kind = job.kind;
+    const touched = job.phases.slice(0, job.i + 1).some((p) => p.destructive);
+    killJob();
+    showDialog({
+      title: 'Stopping…', spinner: true, busy: true,
+      body: '<p>Stopping and removing temporary files. This takes a few seconds.</p>',
+      progress: { value: null, label: 'Cleaning up' },
+      escMessage: 'Cleanup is running and can’t be interrupted. The dialog closes when it finishes.',
+    });
+    announce('Stopping and cleaning up.', true);
+    setTimeout(() => {
+      closeDialog();
+      const msg = message || (kind === 'export'
+        ? 'Export stopped. Temporary files were removed.'
+        : touched
+          ? `${kind === 'import' ? 'Import' : 'Restore'} stopped. The site may be partially restored. Run it again or restore another backup.`
+          : `${kind === 'import' ? 'Import' : 'Restore'} cancelled. Nothing on this site was changed.`);
+      notice(pageFor(kind), touched ? 'warning' : 'info', esc(msg));
+    }, 1600);
+  }
+
+  function showConfirm() {
+    const m = job.meta;
+    const isRestore = job.kind === 'restore';
+    showDialog({
+      role: 'alertdialog', tone: 'warning',
+      title: 'Replace this site?',
+      body: `
+        <p>Importing <strong>${esc(m.name)}</strong> will overwrite this site's:</p>
+        <ul><li>Database: posts, pages, users and settings</li><li>Media library</li><li>Plugins and themes</li></ul>
+        <dl class="kv">
+          <dt>Backup created</dt><dd>${esc(dtf.format(m.created))}</dd>
+          <dt>Source site</dt><dd>https://old-site.example</dd>
+          <dt>This site</dt><dd>https://my-site.example</dd>
+          <dt>Size</dt><dd>${esc(fmtSize(m.size))}</dd>
+        </dl>
+        <p class="hint">Addresses and file paths are updated automatically. Afterwards, log in with a username and password from the source site.</p>
+        ${settings.beforeImport
+          ? '<p class="hint">A safety backup of this site is made first, so you can undo this from the Backups tab.</p>'
+          : '<p class="hint"><strong>No safety backup will be made</strong> (turned off in Settings).</p>'}`,
+      actions: [
+        { label: 'Cancel', autofocus: true, action: cancelConfirm },
+        { label: 'Replace this site', variant: 'danger', action: proceed },
+      ],
+      esc: cancelConfirm,
+    });
+    function cancelConfirm() {
+      if (isRestore) {
+        killJob();
+        closeDialog();
+        notice('backups', 'info', 'Restore cancelled. Nothing on this site was changed.');
+      } else {
+        doStop();
+      }
+    }
+  }
+  function proceed() {
+    job.paused = false;
+    job.pct = 0;
+    job.i++;
+    showRunning();
+    loop();
+  }
+
+  function finish() {
+    const kind = job.kind, meta = job.meta;
+    const hadSafety = job.phases.some((p) => p.id === 'safety');
+    killJob();
+    if (kind === 'export') {
+      const type = meta.type || 'manual';
+      backups.unshift({ name: meta.name, folder: type === 'scheduled' ? 'scheduled' : '', created: new Date(), size: meta.size, type });
+      if (type === 'scheduled') {
+        const scheduled = backups.filter((b) => b.type === 'scheduled');
+        const extra = scheduled.slice(settings.keep);
+        extra.forEach((b) => backups.splice(backups.indexOf(b), 1));
+        if (extra.length) notice('settings', 'info', `Deleted ${extra.length} old scheduled ${extra.length === 1 ? 'backup' : 'backups'} (keeping the latest ${settings.keep}).`);
+        $('#sch-last').innerHTML = `<span class="status-ok">Succeeded</span> · just now · ${esc(fmtSize(meta.size))}`;
+      }
+      renderBackups();
+      showDialog({
+        tone: 'success', title: 'Export complete',
+        body: `<p>Your backup is ready.</p><dl class="kv"><dt>File</dt><dd>${esc(meta.name)}</dd><dt>Size</dt><dd>${esc(fmtSize(meta.size))}</dd></dl>
+               <p class="hint">It's also listed on the Backups page. Downloads require you to be logged in.</p>`,
+        actions: [
+          { label: 'Close', action: () => closeDialog() },
+          { label: 'Go to Backups', action: () => { closeDialog(false); location.hash = 'backups'; } },
+          { label: 'Download', variant: 'primary', autofocus: true, action: () => announce('Download started.', true) },
+        ],
+        esc: () => closeDialog(),
+      });
+      announce('Export complete. Your backup is ready to download.', true);
+    } else {
+      let safetyItem = '';
+      if (hadSafety) {
+        const sname = `my-site.example-${stamp(new Date())}-before-${kind}.snapbak`;
+        backups.unshift({ name: sname, folder: 'safety', created: new Date(Date.now() - 60e3), size: 1.3 * 1024 ** 3, type: 'safety' });
+        renderBackups();
+        safetyItem = `<li><span class="ok">${icon('check')}</span><span>Safety backup saved as ${esc(sname)}. Restore it from the Backups tab if something looks wrong.</span></li>`;
+      }
+      showDialog({
+        tone: 'success', title: kind === 'import' ? 'Import complete' : 'Restore complete',
+        body: `<p>This site now contains the contents of <strong>${esc(meta.name)}</strong>.</p>
+          <ul class="checklist">
+            <li><span class="ok">${icon('check')}</span><span>Addresses updated from https://old-site.example to https://my-site.example</span></li>
+            <li><span class="ok">${icon('check')}</span><span>Permalinks refreshed</span></li>
+            ${safetyItem}
+            <li><span class="warn">${icon('alert')}</span><span>You'll need to log in again, using a username and password from the source site.</span></li>
+          </ul>`,
+        actions: [
+          { label: 'Close', action: () => closeDialog() },
+          { label: 'Log in again', variant: 'primary', autofocus: true, action: () => { closeDialog(); notice(pageFor(kind), 'info', 'In the real plugin this goes to the login screen.'); } },
+        ],
+        esc: () => closeDialog(),
+      });
+      announce(`${kind === 'import' ? 'Import' : 'Restore'} complete. Log in again to continue.`, true);
+    }
+  }
+
+  function fail() {
+    clearTimeout(job.timer);
+    job.paused = true;
+    const kind = job.kind;
+    const ph = job.phases[job.i];
+    const destructive = !!ph.destructive;
+    const reason = kind === 'export'
+      ? 'Table wp_postmeta could not be read (MySQL error 1194: the table is marked as crashed).'
+      : 'A database statement was larger than the server allows (max_allowed_packet is 16 MB).';
+    showDialog({
+      role: 'alertdialog', tone: 'error',
+      title: kind === 'export' ? 'Export failed' : kind === 'import' ? 'Import failed' : 'Restore failed',
+      body: `<p>${esc(ph.label)} couldn't finish.</p>
+        <p class="error-detail">${esc(reason)}</p>
+        ${destructive ? '<p><strong>The site may be partially restored.</strong> Retry from this step, or restore another backup.</p>' : '<p>Nothing on this site was changed.</p>'}
+        <details><summary>Technical details</summary><pre>job 7f3a9c… step=${esc(ph.id)} attempt=1
+${esc(reason)}
+See the job log for the full trace.</pre></details>`,
+      actions: [
+        { label: 'Close', action: () => { const k = job.kind; killJob(); closeDialog(); notice(pageFor(k), destructive ? 'warning' : 'error', `${esc(kind[0].toUpperCase() + kind.slice(1))} failed. The job log is kept on the Backups page for 7 days.`); } },
+        { label: 'Download log', action: () => announce('Log download started.', true) },
+        { label: 'Retry from this step', variant: 'primary', autofocus: true, action: () => { job.failAt = -1; job.paused = false; showRunning(); loop(); } },
+      ],
+      esc: null,
+      escMessage: 'Choose Retry, Download log or Close.',
+    });
+    announce(`${kind} failed. ${reason}`, true);
+  }
+
+  /* ---------------- Export ---------------- */
+  function startExport(type) {
+    type = typeof type === 'string' ? type : 'manual';
+    killJob();
+    const size = type === 'scheduled' && settings.contents === 'database' ? 48 * 1024 ** 2 : 1.3 * 1024 ** 3;
+    job = makeJob('export', { name: `my-site.example-${stamp(new Date())}.snapbak`, size, created: new Date(), type });
+    showRunning();
+    loop();
+  }
+  $('#export-start').addEventListener('click', startExport);
+
+  /* ---------------- Import ---------------- */
+  function startImport(file) {
+    killJob();
+    if (file && file.size === 0) {
+      showDialog({
+        role: 'alertdialog', tone: 'error', title: 'This file can’t be imported',
+        body: `<p><strong>${esc(file.name)}</strong> is empty. Choose a backup file created by SnapBak.</p>`,
+        actions: [{ label: 'Choose another file', variant: 'primary', autofocus: true, action: () => { closeDialog(); $('#import-file').click(); } }],
+        esc: () => closeDialog(),
+      });
+      return;
+    }
+    const meta = file
+      ? { name: file.name, size: file.size || 1, created: new Date(file.lastModified || Date.now()) }
+      : { name: 'old-site.example-20261009-2215.snapbak', size: 2.4 * 1024 ** 3, created: new Date(Date.now() - 2 * 864e5) };
+    job = makeJob('import', meta);
+    showRunning();
+    loop();
+  }
+  function rejectFile(name) {
+    showDialog({
+      role: 'alertdialog', tone: 'error', title: 'This file can’t be imported',
+      body: `<p><strong>${esc(name)}</strong> isn't a SnapBak backup. SnapBak backups end in <code>.snapbak</code>.</p><p class="hint">Nothing was uploaded.</p>`,
+      actions: [{ label: 'Choose another file', variant: 'primary', autofocus: true, action: () => { closeDialog(); $('#import-file').click(); } }],
+      esc: () => closeDialog(),
+    });
+  }
+  $('#choose-btn').addEventListener('click', () => $('#import-file').click());
+  $('#import-file').addEventListener('change', (e) => {
+    const f = e.target.files[0];
+    e.target.value = '';
+    if (!f) return;
+    // Preview accepts any file so you can try it; the real plugin checks the extension and header.
+    startImport(f);
+  });
+  const dz = $('#dropzone');
+  ['dragenter', 'dragover'].forEach((t) => dz.addEventListener(t, (e) => {
+    e.preventDefault();
+    dz.classList.add('is-dragover');
+    $('#dz-text').textContent = 'Release to upload';
+  }));
+  ['dragleave', 'drop'].forEach((t) => dz.addEventListener(t, (e) => {
+    e.preventDefault();
+    if (t === 'dragleave' && dz.contains(e.relatedTarget)) return;
+    dz.classList.remove('is-dragover');
+    $('#dz-text').textContent = 'Drag and drop a backup file here';
+  }));
+  dz.addEventListener('drop', (e) => {
+    const files = e.dataTransfer.files;
+    if (!files.length) return;
+    if (files.length > 1) notice('import', 'info', `${files.length} files were dropped. Only the first one, <strong>${esc(files[0].name)}</strong>, is used.`);
+    startImport(files[0]);
+  });
+
+  /* ---------------- Backups ---------------- */
+  const H = 3600e3;
+  const backups = [
+    { name: 'my-site.example-20261011-0930.snapbak', folder: '', created: new Date(Date.now() - 3 * H), size: 1.28 * 1024 ** 3, type: 'manual' },
+    { name: 'my-site.example-20261004-0300.snapbak', folder: 'scheduled', created: new Date(Date.now() - 7 * 24 * H), size: 1.21 * 1024 ** 3, type: 'scheduled' },
+    { name: 'my-site.example-20261002-1412-before-import.snapbak', folder: 'safety', created: new Date(Date.now() - 9 * 24 * H), size: 1.2 * 1024 ** 3, type: 'safety' },
+    { name: 'my-site.example-20260927-0300.snapbak', folder: 'scheduled', created: new Date(Date.now() - 14 * 24 * H), size: 1.19 * 1024 ** 3, type: 'scheduled' },
+    { name: 'before-theme-switch.snapbak', folder: '', created: new Date(Date.now() - 41 * 24 * H), size: 864 * 1024 ** 2, type: 'manual' },
+  ];
+  const TYPE_LABEL = { manual: 'Manual', scheduled: 'Scheduled', safety: 'Safety' };
+  function renderBackups() {
+    const list = opts.emptyBackups ? [] : backups;
+    $('#backups-next').innerHTML = settings.enabled
+      ? `${icon('clock')}<span>Next scheduled backup: ${esc(fmtWhen(nextRun(settings)))} · <a href="#settings">Change</a></span>`
+      : `${icon('clock')}<span>Scheduled backups are off · <a href="#settings">Turn on</a></span>`;
+    $('#storage-used').textContent = `${fmtSize(list.reduce((s, b) => s + b.size, 0))} in ${list.length} ${list.length === 1 ? 'backup' : 'backups'}`;
+    const body = $('#backups-body');
+    body.innerHTML = list.map((b, idx) => `
+      <tr data-idx="${idx}">
+        <td><div class="name">${icon('file')}<span>${esc(b.name)} <span class="type-badge type-${b.type}">${TYPE_LABEL[b.type]}</span>${b.folder ? `<small>${icon('folder')} ${esc(b.folder)}/</small>` : ''}</span></div></td>
+        <td><time datetime="${b.created.toISOString()}">${esc(relTime(b.created))}<small>${esc(dtf.format(b.created))}</small></time></td>
+        <td class="num">${esc(fmtSize(b.size))}</td>
+        <td class="actions"><div class="button-group">
+          <button type="button" class="button" data-act="download" aria-label="Download ${esc(b.name)}">${icon('download')}Download</button>
+          <button type="button" class="button" data-act="restore" aria-label="Restore ${esc(b.name)}">${icon('restore')}Restore</button>
+          <button type="button" class="button-link danger" data-act="delete" aria-label="Delete ${esc(b.name)}">Delete</button>
+        </div></td>
+      </tr>`).join('');
+    $('#backups-table').hidden = !list.length;
+    $('#backups-empty').hidden = !!list.length;
+    $('#tab-backups-count').textContent = list.length ? String(list.length) : '';
+    $('#tab-backups-count').hidden = !list.length;
+    $('#tab-backups-count-sr').textContent = list.length ? ` (${list.length})` : '';
+    $('#backups-count').textContent = list.length
+      ? `${list.length} ${list.length === 1 ? 'backup' : 'backups'}, ${fmtSize(list.reduce((s, b) => s + b.size, 0))} in total`
+      : '';
+  }
+  $('#backups-body').addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-act]');
+    if (!btn) return;
+    const idx = Number(btn.closest('tr').dataset.idx);
+    const b = backups[idx];
+    if (btn.dataset.act === 'download') notice('backups', 'info', `Downloading <strong>${esc(b.name)}</strong>. The file is streamed through WordPress, so only logged-in administrators can download it.`);
+    if (btn.dataset.act === 'restore') startRestore(b);
+    if (btn.dataset.act === 'delete') confirmDelete(idx);
+  });
+  function startRestore(b) {
+    killJob();
+    job = makeJob('restore', { name: b.name, size: b.size, created: b.created });
+    loop(); // first phase is the confirmation gate
+  }
+  function confirmDelete(idx) {
+    const b = backups[idx];
+    showDialog({
+      role: 'alertdialog', tone: 'warning', title: 'Delete this backup?',
+      body: `<p><strong>${esc(b.name)}</strong> (${esc(fmtSize(b.size))}) will be permanently deleted from the server. This can't be undone.</p>`,
+      actions: [
+        { label: 'Cancel', autofocus: true, action: () => closeDialog() },
+        { label: 'Delete backup', variant: 'danger', action: () => doDelete(idx) },
+      ],
+      esc: () => closeDialog(),
+    });
+  }
+  function doDelete(idx) {
+    const b = backups[idx];
+    closeDialog(false);
+    if (opts.failNext) {
+      opts.failNext = false;
+      $('#pv-fail').checked = false;
+      notice('backups', 'error', `Couldn't delete <strong>${esc(b.name)}</strong>: the file isn't writable by the web server.`);
+      const row = $(`#backups-body tr[data-idx="${idx}"] [data-act="delete"]`);
+      if (row) row.focus();
+      return;
+    }
+    backups.splice(idx, 1);
+    renderBackups();
+    notice('backups', 'success', `Deleted <strong>${esc(b.name)}</strong>.`);
+    const rows = $$('#backups-body tr');
+    const target = rows[Math.min(idx, rows.length - 1)];
+    (target ? target.querySelector('[data-act="delete"]') : $('#tab-backups')).focus();
+  }
+
+  /* ---------------- Settings ---------------- */
+  const settings = { enabled: false, frequency: 'daily', weekday: 0, monthday: 1, time: '03:00', contents: 'full', keep: 7, beforeImport: true, beforeUpdates: false, runner: 'auto' };
+  const whenFmt = new Intl.DateTimeFormat(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  const fmtWhen = (d) => `${whenFmt.format(d)} (${relTime(d)})`;
+  (function fillWeekdays() {
+    const wf = new Intl.DateTimeFormat(undefined, { weekday: 'long' });
+    for (let d = 0; d < 7; d++) {
+      const o = document.createElement('option');
+      o.value = String(d);
+      o.textContent = wf.format(new Date(2026, 9, 11 + d)); // 11 Oct 2026 is a Sunday (getDay() 0)
+      $('#sch-weekday').append(o);
+    }
+  })();
+  function nextRun(s, from = new Date()) {
+    const [hh, mm] = (/^\d{2}:\d{2}$/.test(s.time) ? s.time : '03:00').split(':').map(Number);
+    const at = (d) => { const x = new Date(d); x.setHours(hh, mm, 0, 0); return x; };
+    let t = at(from);
+    if (s.frequency === 'twicedaily') {
+      t = new Date(t.getTime() - 12 * H);
+      while (t <= from) t = new Date(t.getTime() + 12 * H);
+      return t;
+    }
+    if (s.frequency === 'weekly') {
+      t.setDate(t.getDate() + ((s.weekday - t.getDay() + 7) % 7));
+      if (t <= from) t.setDate(t.getDate() + 7);
+      return t;
+    }
+    if (s.frequency === 'monthly') {
+      const day = Math.min(28, Math.max(1, s.monthday || 1));
+      t.setDate(day);
+      if (t <= from) { t.setDate(1); t.setMonth(t.getMonth() + 1); t.setDate(day); }
+      return t;
+    }
+    if (t <= from) t.setDate(t.getDate() + 1);
+    return t;
+  }
+  function readForm() {
+    return {
+      enabled: $('#sch-enabled').checked,
+      frequency: $('#sch-frequency').value,
+      weekday: Number($('#sch-weekday').value),
+      monthday: Number($('#sch-monthday').value),
+      time: $('#sch-time').value,
+      contents: $('input[name="sch-contents"]:checked').value,
+      keep: Number($('#sch-keep').value),
+      beforeImport: $('#auto-import').checked,
+      beforeUpdates: $('#auto-updates').checked,
+      runner: $('#runner').value,
+    };
+  }
+  const formSnapshot = () => JSON.stringify($$('#settings-form input, #settings-form select').map((el) => (el.type === 'checkbox' || el.type === 'radio' ? el.checked : el.value)));
+  let savedSnapshot = '';
+  function syncSettingsUI() {
+    const f = readForm();
+    $('#sch-fields').hidden = !f.enabled;
+    $('#sch-state').textContent = f.enabled ? 'On' : 'Off';
+    $('#f-weekday').hidden = f.frequency !== 'weekly';
+    $('#f-monthday').hidden = f.frequency !== 'monthly';
+    $('#auto-updates-scope').hidden = !f.beforeUpdates;
+    $('#auto-updates').setAttribute('aria-expanded', String(f.beforeUpdates));
+    $('#runner-warning').hidden = !(opts.cronDisabled && f.enabled);
+    $('#sch-next').textContent = f.enabled ? fmtWhen(nextRun(f)) : '—';
+    $('#settings-dirty').textContent = formSnapshot() !== savedSnapshot ? 'You have unsaved changes.' : '';
+  }
+  function clearErrors() {
+    $$('#settings-form .field-error').forEach((el) => el.remove());
+    $$('#settings-form [aria-invalid]').forEach((el) => {
+      el.removeAttribute('aria-invalid');
+      if (el.dataset.describedby !== undefined) {
+        if (el.dataset.describedby) el.setAttribute('aria-describedby', el.dataset.describedby);
+        else el.removeAttribute('aria-describedby');
+      }
+    });
+    $('#settings-errors').hidden = true;
+  }
+  function validateSettings() {
+    const errs = [];
+    const f = readForm();
+    const int = (id, min, max, msg) => {
+      const v = $('#' + id).value.trim();
+      const n = Number(v);
+      if (v === '' || !Number.isInteger(n) || n < min || n > max) errs.push([id, msg]);
+    };
+    if (f.enabled) {
+      if (f.frequency === 'monthly') int('sch-monthday', 1, 28, 'Day of the month must be a whole number from 1 to 28.');
+      if (!/^\d{2}:\d{2}$/.test(f.time)) errs.push(['sch-time', 'Enter a time, for example 03:00.']);
+      int('sch-keep', 1, 100, 'Scheduled backups to keep must be a whole number from 1 to 100.');
+      if (f.runner === 'off') errs.push(['runner', 'Scheduled backups need background jobs. Choose another option here, or turn off scheduled backups.']);
+    }
+    int('auto-keep', 1, 20, 'Safety backups to keep must be a whole number from 1 to 20.');
+    const bad = $('#notify-email').value.split(',').map((x) => x.trim()).filter(Boolean)
+      .filter((e) => !/^[^\s@,]+@[^\s@,]+\.[^\s@,]+$/.test(e));
+    if (bad.length) errs.push(['notify-email', `“${bad[0]}” isn't a valid email address.`]);
+    int('storage-warn', 0, 100000, 'Enter a whole number of GB, or 0 to turn the warning off.');
+    int('log-days', 1, 365, 'Keep job logs for a whole number of days from 1 to 365.');
+    if ($('#auth-pass').value && !$('#auth-user').value.trim()) errs.push(['auth-user', 'Enter the username that goes with the password.']);
+    return errs;
+  }
+  function showErrors(errs) {
+    clearErrors();
+    if (!errs.length) return;
+    errs.forEach(([id, msg]) => {
+      const el = $('#' + id);
+      let hiddenParent = el.closest('[hidden]');
+      while (hiddenParent) {
+        const ctl = $(`[aria-controls="${hiddenParent.id}"]`);
+        if (ctl) ctl.setAttribute('aria-expanded', 'true');
+        hiddenParent.hidden = false;
+        hiddenParent = el.closest('[hidden]');
+      }
+      const p = document.createElement('p');
+      p.className = 'field-error';
+      p.id = id + '-err';
+      p.innerHTML = `${icon('error')}<span>${esc(msg)}</span>`;
+      el.insertAdjacentElement('afterend', p);
+      if (el.dataset.describedby === undefined) el.dataset.describedby = el.getAttribute('aria-describedby') || '';
+      el.setAttribute('aria-invalid', 'true');
+      el.setAttribute('aria-describedby', `${p.id} ${el.dataset.describedby}`.trim());
+    });
+    const n = errs.length;
+    $('#settings-errors-title').textContent = `Fix ${n} ${n === 1 ? 'problem' : 'problems'} before saving`;
+    $('#settings-errors-list').innerHTML = errs.map(([id, msg]) => `<li><button type="button" class="button-link" data-field="${id}">${esc(msg)}</button></li>`).join('');
+    $('#settings-errors').hidden = false;
+    $('#settings-errors').focus();
+  }
+  $('#settings-errors-list').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-field]');
+    if (b) $('#' + b.dataset.field).focus();
+  });
+  function showNotice(page, type, html) {
+    notice(page, type, html);
+    $('#notices-' + page).scrollIntoView({ block: 'nearest' });
+  }
+  $('#settings-form').addEventListener('input', syncSettingsUI);
+  $('#settings-form').addEventListener('change', syncSettingsUI);
+  $('#settings-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const errs = validateSettings();
+    showErrors(errs);
+    if (errs.length) return;
+    Object.assign(settings, readForm());
+    savedSnapshot = formSnapshot();
+    syncSettingsUI();
+    renderBackups();
+    showNotice('settings', 'success', settings.enabled
+      ? `Settings saved. Next scheduled backup: ${esc(fmtWhen(nextRun(settings)))}.`
+      : 'Settings saved.');
+  });
+  $('#sch-run-now').addEventListener('click', () => startExport('scheduled'));
+  $('#notify-test').addEventListener('click', () => {
+    const to = $('#notify-email').value.trim() || 'admin@my-site.example';
+    showNotice('settings', 'info', `Test email sent to ${esc(to)}. If it hasn't arrived in a few minutes, check this site's email setup.`);
+  });
+
+  /* ---------------- Storage gate ---------------- */
+  function renderGate() {
+    $('#import-ready').hidden = opts.storageBlocked;
+    $('#import-blocked').hidden = !opts.storageBlocked;
+    $('#backups-ready').hidden = opts.storageBlocked;
+    $('#backups-blocked').hidden = !opts.storageBlocked;
+  }
+  $$('[data-recheck]').forEach((b) => b.addEventListener('click', () => {
+    if (opts.storageBlocked) notice(currentPage, 'error', 'Still not writable. Check the folder permissions and try again.');
+    else renderGate();
+  }));
+
+  /* ---------------- Preview controls ---------------- */
+  $('#preview-toggle').addEventListener('click', (e) => {
+    const btn = e.currentTarget;
+    const open = btn.getAttribute('aria-expanded') === 'true';
+    btn.setAttribute('aria-expanded', String(!open));
+    $('#preview-inner').hidden = open;
+  });
+  $('#pv-fail').addEventListener('change', (e) => { opts.failNext = e.target.checked; });
+  $('#pv-retry').addEventListener('change', (e) => { opts.retryNext = e.target.checked; });
+  $('#pv-empty').addEventListener('change', (e) => { opts.emptyBackups = e.target.checked; renderBackups(); });
+  $('#pv-blocked').addEventListener('change', (e) => { opts.storageBlocked = e.target.checked; renderGate(); });
+  $('#pv-cron').addEventListener('change', (e) => { opts.cronDisabled = e.target.checked; syncSettingsUI(); });
+  $('#pv-rtl').addEventListener('change', (e) => { document.documentElement.dir = e.target.checked ? 'rtl' : 'ltr'; });
+
+  function jump(kind, phaseId, p, extra) {
+    killJob();
+    if (dlgOpen) closeDialog(false);
+    location.hash = pageFor(kind);
+    const meta = kind === 'export'
+      ? { name: `my-site.example-${stamp(new Date())}.snapbak`, size: 1.3 * 1024 ** 3, created: new Date() }
+      : kind === 'import'
+        ? { name: 'old-site.example-20261009-2215.snapbak', size: 2.4 * 1024 ** 3, created: new Date(Date.now() - 2 * 864e5) }
+        : { ...backups[0] };
+    job = makeJob(kind, meta);
+    job.i = job.phases.findIndex((ph) => ph.id === phaseId);
+    job.pct = p;
+    Object.assign(job, extra || {});
+    return job;
+  }
+  const STATES = {
+    'export-running': () => { jump('export', 'files', 0.35); showRunning(); loop(); },
+    'export-retry': () => { const j = jump('export', 'files', 0.45); j.retryAt = j.i; showRunning(); loop(); },
+    'export-stopping': () => { jump('export', 'files', 0.3); doStop(); },
+    'export-download': () => { jump('export', 'finalize', 0.99); finish(); },
+    'export-error': () => { const j = jump('export', 'db', 0.6); j.failAt = j.i; showRunning(); fail(); },
+    'import-upload': () => { jump('import', 'upload', 0.3); showRunning(); loop(); },
+    'import-confirm': () => { jump('import', 'confirm', 0); loop(); },
+    'import-running': () => { jump('import', 'db', 0.25); showRunning(); loop(); },
+    'import-stop-confirm': () => { jump('import', 'files', 0.4); showRunning(); requestStop(); },
+    'import-done': () => { jump('import', 'finalize', 0.99); finish(); },
+    'import-error': () => { const j = jump('import', 'db', 0.6); j.failAt = j.i; showRunning(); fail(); },
+    'import-badfile': () => { killJob(); if (dlgOpen) closeDialog(false); location.hash = 'import'; rejectFile('site-export.zip'); },
+    'restore-confirm': () => { killJob(); if (dlgOpen) closeDialog(false); location.hash = 'backups'; startRestore(backups[0] || { name: 'example.snapbak', size: 1024 ** 3, created: new Date() }); },
+    'settings-on': () => {
+      killJob(); if (dlgOpen) closeDialog(false); location.hash = 'settings';
+      $('#sch-enabled').checked = true; $('#sch-frequency').value = 'weekly'; $('#sch-weekday').value = '0';
+      syncSettingsUI();
+    },
+    'settings-errors': () => {
+      killJob(); if (dlgOpen) closeDialog(false); location.hash = 'settings';
+      $('#sch-enabled').checked = true; $('#sch-frequency').value = 'monthly'; $('#sch-monthday').value = '31';
+      $('#sch-keep').value = '0'; $('#notify-email').value = 'admin@my-site.example, ops@';
+      syncSettingsUI();
+      setTimeout(() => $('#settings-form').requestSubmit(), 0);
+    },
+    'settings-run-now': () => { killJob(); if (dlgOpen) closeDialog(false); location.hash = 'settings'; startExport('scheduled'); },
+    'delete-confirm': () => {
+      killJob(); if (dlgOpen) closeDialog(false); location.hash = 'backups';
+      if (!backups.length || opts.emptyBackups) { notice('backups', 'info', 'There are no backups to delete. Untick “Empty backups list” in the preview controls.'); return; }
+      confirmDelete(0);
+    },
+  };
+  $('#pv-state').addEventListener('change', (e) => {
+    const fn = STATES[e.target.value];
+    e.target.value = '';
+    if (fn) setTimeout(fn, 0);
+  });
+
+  /* ---------------- Init ---------------- */
+  syncRows();
+  savedSnapshot = formSnapshot();
+  syncSettingsUI();
+  renderBackups();
+  renderGate();
+  route(false);
+
+  if (window.matchMedia('(max-width: 782px)').matches) { $('#preview-toggle').setAttribute('aria-expanded', 'false'); $('#preview-inner').hidden = true; }
+
+  // Deep links for reviewers: index.html?state=import-confirm&rtl=1#import
+  const qs = new URLSearchParams(location.search);
+  if (qs.get('rtl') === '1') { $('#pv-rtl').checked = true; document.documentElement.dir = 'rtl'; }
+  if (qs.get('empty') === '1') { $('#pv-empty').checked = true; opts.emptyBackups = true; renderBackups(); }
+  if (qs.get('cron') === '0') { $('#pv-cron').checked = true; opts.cronDisabled = true; }
+  if (qs.get('blocked') === '1') { $('#pv-blocked').checked = true; opts.storageBlocked = true; renderGate(); }
+  if (STATES[qs.get('state')]) setTimeout(STATES[qs.get('state')], 0);
+})();
+</script>
+</body>
+</html>
