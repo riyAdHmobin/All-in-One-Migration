@@ -1,6 +1,6 @@
 # 03 - Technical Architecture: All-in-One WP Migration v6.77 (ServMask)
 
-Purpose: describe the internal architecture, data formats, hooks and endpoints of the original plugin (AI1WM) precisely enough for SnapBak, a clean-room reimplementation by Riyadh Mobin, to be built from it.
+Purpose: describe the internal architecture, data formats, hooks and endpoints of the original plugin (AI1WM) precisely enough for SnapBak, a reimplementation by Riyadh Mobin, to be built from it. Each section cites `file:line` so the original code can be checked as a reference (`06-Development-Plan.md` §7).
 
 ## Table of contents
 

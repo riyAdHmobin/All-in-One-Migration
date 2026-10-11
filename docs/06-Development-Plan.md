@@ -1,6 +1,6 @@
 # 06 — Development Plan
 
-How to build SnapBak: a clean-room reimplementation of the behaviour documented in `02-SRS.md`, with the problems in `05-Improvement-Notes.md` designed out from the start.
+How to build SnapBak: a reimplementation of the behaviour documented in `02-SRS.md`, with the problems in `05-Improvement-Notes.md` designed out from the start.
 
 ## Contents
 
@@ -10,7 +10,7 @@ How to build SnapBak: a clean-room reimplementation of the behaviour documented 
 4. [Task breakdown and estimates](#4-task-breakdown-and-estimates)
 5. [Testing strategy](#5-testing-strategy)
 6. [Data migration plan for users switching from the original](#6-data-migration-plan-for-users-switching-from-the-original)
-7. [Clean-room process](#7-clean-room-process)
+7. [Using the original code as a reference](#7-using-the-original-code-as-a-reference)
 8. [Risks and mitigations](#8-risks-and-mitigations)
 
 ---
@@ -102,7 +102,7 @@ Estimates assume one senior WordPress developer, and are in ideal engineering da
 
 | Phase | Goal | Exit criteria | Estimate |
 |---|---|---|---|
-| **0. Foundations** | Repo, tooling, CI, plugin skeleton, clean-room setup | CI green on PHP 7.4–8.3 × WP 6.0–latest; PHPCS/PHPStan level 6; `wp-env` working | 4–6 d |
+| **0. Foundations** | Repo, tooling, CI, plugin skeleton, reference policy and licence decision | CI green on PHP 7.4–8.3 × WP 6.0–latest; PHPCS/PHPStan level 6; `wp-env` working | 4–6 d |
 | **1. MVP: single-site export and import to file** | Feature parity for the core free flow | Round-trip a reference site (posts, media, plugins, themes, serialized options) to a new domain and new table prefix with zero diff in the verification script. Archives up to 5 GB on a host with a 2 MB upload limit and 30 s `max_execution_time`. | 30–40 d |
 | **2. Feature parity** | Everything else the original's free core does | Backups page (list, download, delete, restore); every export exclusion option; find/replace UI; WP-CLI backup and restore; notices and self-tests; i18n; uninstall; host compatibility list (LiteSpeed, IIS, Nginx) | 18–25 d |
 | **3. Improvements** | Things the original lacks or gets wrong | Background runner (Action Scheduler); **Settings tab with scheduled backups, retention and safety backups** (before import/restore and before automatic updates); email notifications; encryption; compression; accessible UI audit (WCAG 2.1 AA); multisite full-network export/import; optional read-only legacy `.wpress` importer | 31–49 d |
@@ -124,7 +124,7 @@ SRS references point at the functional-requirement groups in `02-SRS.md`.
 | 0.2 | JS toolchain (`@wordpress/scripts`), lint and test (Jest), build artifacts excluded from git and included in releases | 1 d |
 | 0.3 | Plugin bootstrap: requirements check, service container, capability registration, activation and uninstall skeleton | 1 d |
 | 0.4 | Reference test sites and fixture generator (see §5.3) | 1–2 d |
-| 0.5 | Clean-room process docs and contributor attestation (§7) | 0.5 d |
+| 0.5 | Reference policy (§7): `CREDITS.md`, pull-request template field "Original code consulted (file:line)", licence decision (GPLv2+ or GPLv3+) | 0.5 d |
 
 ### Phase 1 — MVP (30–40 d)
 
@@ -241,16 +241,20 @@ There is no persistent plugin data worth migrating: the original stores only ope
 
 ---
 
-## 7. Clean-room process
+## 7. Using the original code as a reference
 
-The goal is to show that the new code is an independent implementation of documented behaviour.
+The documents in `docs/` are the specification. The original plugin's source (`all-in-one-wp-migration/`) **may be consulted as a reference** when a document is unclear or incomplete, or to check an edge case. Every requirement in `02-SRS.md` has a "Source" row with `file:line` pointers for this. The rules below keep SnapBak independent, secure and correctly licensed.
 
-1. **Two roles.** The *spec team* has read the original code and wrote `docs/01–05`. The *implementation team* works only from `docs/` and public WordPress documentation, and never opens `all-in-one-wp-migration/`.
-2. **Separate repository** for SnapBak. The original's source is not in it, not in its history, and not available to the implementers' tooling. This includes AI assistants: don't give them access to the original directory.
-3. **Specs describe behaviour, not code.** `docs/` contains no copied code (rule 4 of the documentation set). Short identifiers are referenced only so the behaviour can be checked.
-4. **New names everywhere:** the product is **SnapBak** by **Riyadh Mobin**. Use slug and text domain `snapbak`, namespace `SnapBak\`, prefixes `snapbak_` / `SNAPBAK_`, REST namespace `snapbak/v1`, CLI `wp snapbak`, CSS prefix `snapbak-`, archive extension `.snapbak` with the `SNAPBAK` signature, and UI copy written from scratch (full list in `02-SRS.md` §1.6). No ServMask or "All-in-One WP Migration" branding (`01-BRD.md`, constraints).
-5. **Licensing.** The original is GPL; a WordPress plugin distributed on WordPress.org must be GPL-compatible anyway. License SnapBak GPLv2-or-later. Clean-room mainly protects against trademark and copyright-of-expression claims; it is not legal advice, so have counsel review it before a commercial launch.
-6. **Record keeping:** keep spec versions and implementation commit history; implementers sign a short attestation that they didn't consult the original's source.
+1. **Docs first.** Start from the requirement. Open the original only to answer a specific question, such as an exact replacement order, a host quirk or an archive field size. Where the original and the docs disagree, the docs win: they deliberately fix the original's behaviour (each FR's "Original behaviour" row).
+2. **Check `05-Improvement-Notes.md` before reusing any idea.** Much of the original is insecure or buggy (SEC-01 to SEC-19, BUG-01 to BUG-35) or built for PHP 5.2. Don't carry over its architecture: no `nopriv` endpoints, no secret key, no `$wp_filter` walking, no static-only classes, no public backup folder.
+3. **Write SnapBak's own code.** Don't copy files or large blocks. If a small piece of logic is adapted, for example a regex or a list of host-specific plugins to deactivate:
+   - mark it in the file header ("Portions adapted from All-in-One WP Migration by ServMask, GPL") and in `CREDITS.md`;
+   - mention it in the pull request;
+   - apply the licence rule in item 6.
+4. **New names everywhere:** the product is **SnapBak** by **Riyadh Mobin**. Use slug and text domain `snapbak`, namespace `SnapBak\`, prefixes `snapbak_` / `SNAPBAK_`, REST namespace `snapbak/v1`, CLI `wp snapbak`, CSS prefix `snapbak-`, archive extension `.snapbak` with the `SNAPBAK` signature, and UI copy written from scratch (full list in `02-SRS.md` §1.6). No ServMask or "All-in-One WP Migration" branding, icons or `ai1wm` identifiers (`01-BRD.md` §6.3). The only exception is the optional legacy `.wpress` reader (FR-043).
+5. **Separate repository.** SnapBak lives in its own repository. The original stays in this reference repository, read-only, and is never copied into or bundled with SnapBak. Developers and AI assistants may have read access to it.
+6. **Licensing.** SnapBak is **GPLv2 or later** as long as it contains no code from the original. The original's file headers say GPLv3-or-later (`readme.txt` says GPLv2-or-later; treat it as GPLv3-or-later). As soon as any adapted code is included, SnapBak must be distributed as **GPLv3 or later**, with the attribution from item 3. This is not legal advice; have it reviewed before a commercial launch.
+7. **Record keeping.** When the original was consulted for a change, link the `file:line` in the pull request. This keeps decisions traceable and makes the licence status in item 6 easy to verify.
 
 ---
 
@@ -263,6 +267,6 @@ The goal is to show that the new code is an independent implementation of docume
 | Very large sites (≥ 20 GB, millions of rows) | Medium | High | Streaming everywhere, keyset pagination, resumable steps, benchmarks in phase 3.9; recommend WP-CLI above a threshold |
 | Partial import leaves the site broken (DB half-imported) | Medium | High | Import into temporary prefixed tables, then swap with atomic `RENAME TABLE`; keep the old tables until success, then drop them (or keep them as a rollback option) |
 | Users lose their session after import | High | Medium | Expected behaviour; guide the user to log in again with the source site's credentials, and say so on the confirm screen |
-| Legal: trademark or copyright claims; `.wpress` compatibility | Low–Med | High | §7 clean-room process; legal review before shipping the legacy importer or marketing comparisons |
+| Legal: trademark or copyright claims; `.wpress` compatibility | Low–Med | High | §7 reference policy (no copied branding, attribution and licence rule for adapted code); legal review before shipping the legacy importer or marketing comparisons |
 | Scope creep into cloud destinations before the core is solid | Medium | Medium | Phases 0–2 are gated on the round-trip exit criteria; destinations are phase 4 |
 | Multisite complexity | Medium | Medium | Defer to phase 3; make the single-site product excellent first; show an honest "not supported yet" message instead of a dead end |

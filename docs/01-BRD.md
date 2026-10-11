@@ -45,7 +45,7 @@ Background facts that shape this BRD:
 | The archive format (later called `.wpress`) was introduced in 3.0.0 together with the Backups page, restore from Backups, and time-sliced export/import. | `changelog.txt:191-201` |
 | The free core offers export to "File" and import from "File" only. Every other destination is an upsell link to a paid extension. | `lib/controller/class-ai1wm-export-controller.php:120-137`; `lib/controller/class-ai1wm-import-controller.php:124-142` |
 | There are no CPTs, taxonomies, shortcodes, blocks, widgets, REST routes or custom DB tables. Everything is stored in options, files in `storage/<job>/`, and `wp-content/ai1wm-backups/`. | A-core note §8; `lib/controller/class-ai1wm-main-controller.php:900-921` |
-| SnapBak is a clean-room reimplementation. Engineers work from these documents, not from the original code. | This document set |
+| SnapBak is a reimplementation built from these documents. Developers may consult the original code as a reference, under the rules in `06-Development-Plan.md` §7. | This document set |
 
 ## 2. Problem statement
 
@@ -239,13 +239,13 @@ Who it is for, based on the readme and the features: site owners with "no techni
 | MySQL / MariaDB variance | Collation and engine mapping is required (utf8mb4_520, utf8mb4_0900, Aria, MyISAM on managed DBs). | `lib/vendor/servmask/database/class-ai1wm-database.php:1129-1147,1262-1314` |
 | Multisite | The original core is unusable on a network without its paid extension. The MVP is single-site only. | `lib/controller/class-ai1wm-main-controller.php:177-188` |
 
-### 6.3 Legal constraints: licensing, clean-room, trademarks
+### 6.3 Legal constraints: licensing, use of the original code, trademarks
 
-- **GPL status of the original.** The source is GPL: the file headers say GPLv3-or-later and `readme.txt:8` says GPLv2 or later. Copying GPL code would be lawful only if SnapBak is distributed under a compatible GPL licence. The project has chosen **clean-room** anyway, which means:
-  - Specification writers read the original. Implementers work only from 01–06 and never see the original code.
-  - These documents describe behaviour in prose and tables. They reproduce no code (STYLE rule 4).
-  - Short identifiers (hook names, option names, archive field sizes) appear only where interoperability needs them.
-  - SnapBak still has to be GPL-compatible if it is distributed through WordPress.org or links against WordPress APIs. Choosing its licence (likely GPLv2-or-later) is a separate decision.
+- **GPL status of the original.** The source is GPL: the file headers say GPLv3-or-later and `readme.txt:8` says GPLv2 or later. The project's policy (`06-Development-Plan.md` §7):
+  - These documents are the specification. They describe behaviour in prose and tables and reproduce no code.
+  - Developers **may consult the original code as a reference** when the documents are unclear, using the `file:line` pointers in `02-SRS.md`.
+  - SnapBak's code is written new. If any logic is adapted from the original, it is attributed, and SnapBak must then be distributed as **GPLv3 or later**, to match the original's file headers. Without adapted code, SnapBak is **GPLv2 or later**.
+  - Short identifiers (hook names, option names, archive field sizes) appear in the documents only where interoperability needs them.
 - **Trademarks and branding.** Do not use "All-in-One WP Migration", "ServMask", the ServMask logo, the IcoMoon "servmask" icon font (`lib/view/assets/font/servmask.*`), or the `.wpress` name in the product name, UI copy, file extension or marketing without legal advice. Also avoid internal tokens that carry the brand, such as `SERVMASK_PREFIX_` (`constants.php:119`) and the `ai1wm_` prefixes, in SnapBak's own format and APIs.
 - **Not legal advice.** This section records business constraints. Counsel should review the trademark position and any compatibility claims before release.
 
@@ -413,5 +413,5 @@ Targets are **proposals** for the business owner to confirm. 02-SRS.md turns the
 | R-6 | A legacy `.wpress` importer brings in format weaknesses (§6.4). | Medium | Medium | Hardened reader, limit it to import, fuzz tests. |
 | R-7 | Raising the PHP baseline excludes some legacy hosts. | Medium | Low-Medium | Publish requirements clearly and show a pre-flight check in the UI. |
 | R-8 | Performance regressions from the added safety work (checksums, encryption). | Medium | Medium | Stream hashing, optional encryption and compression, benchmarks in CI (KPIs §10). |
-| R-9 | Clean-room contamination: implementers copy original code. | Low | High | Process separation and code review against these specs (§6.3). |
+| R-9 | Carrying over the original's weaknesses or licence obligations: code or design taken from the reference brings its security and bug problems, and adapted code makes SnapBak GPLv3-or-later. | Medium | Medium | Rules in `06-Development-Plan.md` §7: docs first, check `05-Improvement-Notes.md` before reusing anything, attribution in `CREDITS.md`, `file:line` noted in pull requests, licence decision recorded in task 0.5. |
 | R-10 | Automatic backups fail silently or fill the disk (WP-Cron not firing, retention too high, full-site backups every 12 hours). | Medium | Medium | Failure emails on by default (FR-121), late-run warning and Site Health test (FR-118), retention that only deletes after a successful run (FR-116), storage-usage warning (FR-122), disk-space check before safety backups (FR-119). |

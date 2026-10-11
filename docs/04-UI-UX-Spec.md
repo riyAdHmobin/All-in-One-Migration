@@ -1,6 +1,6 @@
 # 04 - UI/UX Specification
 
-Purpose: describe every screen, control, state and user-visible message of All-in-One WP Migration v6.77 (ServMask), called "the original plugin" or "AI1WM", and set the UI/UX requirements for SnapBak, the clean-room reimplementation by Riyadh Mobin.
+Purpose: describe every screen, control, state and user-visible message of All-in-One WP Migration v6.77 (ServMask), called "the original plugin" or "AI1WM", and set the UI/UX requirements for SnapBak, the reimplementation by Riyadh Mobin.
 
 ## Contents
 

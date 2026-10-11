@@ -6,7 +6,13 @@ All plugin code lives in `all-in-one-wp-migration/`. Paths below are relative to
 
 ## What this is
 
-**Project goal:** this repo is the reference for **SnapBak**, a clean-room WordPress backup/migration plugin by **Riyadh Mobin**. `docs/01-BRD.md` to `docs/06-Development-Plan.md` specify SnapBak (identifiers in `docs/02-SRS.md` §1.6), and `preview/index.html` is a static UI mock-up. The plugin code in `all-in-one-wp-migration/` is the original being studied, not SnapBak. Don't copy its code into SnapBak, and keep SnapBak's code out of this folder.
+**Project goal:** this repo is the reference for **SnapBak**, a WordPress backup/migration plugin by **Riyadh Mobin**. `docs/01-BRD.md` to `docs/06-Development-Plan.md` specify SnapBak (identifiers in `docs/02-SRS.md` §1.6), and `preview/index.html` is a static UI mock-up. The plugin code in `all-in-one-wp-migration/` is the original, not SnapBak. Consult it as a reference when the docs are unclear (each SRS requirement cites `file:line`), following `docs/06-Development-Plan.md` §7:
+- write new code rather than copying it;
+- check `docs/05-Improvement-Notes.md` before reusing any of its behaviour;
+- attribute any adapted logic (which makes SnapBak GPLv3+);
+- never use `ai1wm`/ServMask names.
+
+Keep SnapBak's own code out of this folder.
 
 A copy of the **All-in-One WP Migration** WordPress plugin (ServMask, v6.77). It exports a WordPress site (database, media, plugins, themes) into a single `.wpress` archive and imports it elsewhere, with find/replace across the database during migration. It targets very old environments: PHP 5.2.17+ and WordPress 3.3+. Don't use newer PHP syntax such as closures, namespaces, short array syntax `[]`, or `??`.
 

@@ -1,6 +1,6 @@
 # 02 - Software Requirements Specification (SRS)
 
-Testable functional and non-functional requirements for SnapBak, a clean-room reimplementation of the behaviour of All-in-One WP Migration v6.77 (ServMask), with the original's defects designed out.
+Testable functional and non-functional requirements for SnapBak, a reimplementation of the behaviour of All-in-One WP Migration v6.77 (ServMask), with the original's defects designed out.
 
 ## Table of contents
 
@@ -21,7 +21,7 @@ Testable functional and non-functional requirements for SnapBak, a clean-room re
 
 This document states what SnapBak must do, in a form that can be implemented and tested without reading the original code. Each requirement records the behaviour observed in the original plugin (AI1WM), with a `path:line` citation relative to the original plugin root, and the behaviour **required** of SnapBak. Where the original is insecure or buggy, the requirement states the corrected behaviour and adds an "Original behaviour" line that points to the matching `SEC-`/`BUG-`/`PERF-` item in `05-Improvement-Notes.md`.
 
-Readers: the implementer, the tester writing acceptance tests, and the reviewer checking clean-room compliance (`06-Development-Plan.md` §7).
+Readers: the implementer, the tester writing acceptance tests, and the reviewer checking that the reference-code rules are followed (`06-Development-Plan.md` §7).
 
 ### 1.2 Scope
 
@@ -48,7 +48,7 @@ The original's facts that bound this SRS:
 | Term | Meaning |
 |---|---|
 | AI1WM, the original plugin | All-in-One WP Migration v6.77 by ServMask, the plugin being reimplemented. |
-| SnapBak | The clean-room reimplementation specified here. It has no brand name yet. |
+| SnapBak | The plugin specified here, by Riyadh Mobin (identity in §1.6). |
 | `snapbak` | Placeholder for SnapBak's prefix (option names, hook names, REST namespace, CLI command). Chosen at branding time. |
 | `.wpress` | The original's archive format: a flat sequence of entries, each a 4377-byte header (name 255, size 14, mtime 12, path 4096 bytes, NUL-padded) followed by the raw file bytes, ending with a 4377-byte all-NUL EOF block. No compression, checksum or index (Source: `lib/vendor/servmask/archiver/class-ai1wm-archiver.php:43-58, 79`). |
 | Archive (new) | SnapBak's archive: versioned, with a manifest and per-file SHA-256 (FR-039 to FR-044). |
@@ -117,7 +117,7 @@ These names are fixed. Every requirement below that mentions a hook, option, rou
 | Backups folder | `wp-content/snapbak-backups/` (FR-004) |
 | Archive file extension | `.snapbak` (name pattern in FR-015) |
 | Archive signature | The first 8 bytes are `SNAPBAK` followed by a NUL byte, then the format version (FR-038) |
-| Licence | GPLv2 or later |
+| Licence | GPLv2 or later; **GPLv3 or later** if any code is adapted from the original (`06-Development-Plan.md` §7) |
 
 **Plugin header (main file):** Plugin Name "SnapBak"; Description "Back up, move and restore your whole WordPress site."; Version; Requires at least 6.0; Requires PHP 7.4; Author "Riyadh Mobin"; License "GPLv2 or later"; Text Domain `snapbak`; Domain Path `/languages`. Plugin URI, Author URI and Update URI are **not yet decided**.
 
@@ -189,7 +189,7 @@ The original instead drives each step through a new `admin-ajax.php` request, ei
 
 ### 2.5 Design and implementation constraints
 
-1. Clean room: no code copied from the original (`06-Development-Plan.md` §7). Short identifiers are allowed for compatibility.
+1. Reference, not copy: the original code may be consulted, but SnapBak's code is written new. Any adapted logic is attributed and makes SnapBak GPLv3-or-later (`06-Development-Plan.md` §7). The original's names and branding are not used (§1.6).
 2. No public, unauthenticated action endpoints. Every REST route has a `permission_callback` that checks the plugin capability (default `manage_options`, filterable) and the REST nonce; background continuation uses job tokens (NFR-010 to NFR-013).
 3. Job state must not be autoloaded and must not be written more than once per second per job (NFR-003).
 4. SnapBak must not change global request state (`$_SERVER['HTTPS']`) or store credentials it was not given (SEC-08, SEC-11).
